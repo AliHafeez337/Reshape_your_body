@@ -1,17 +1,35 @@
+/* PACKAGES IMPORTS */
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const session=require('express-session');
-const passport=require('passport');
 const logger = require('morgan');
 const socketIO = require('socket.io');
 const http = require('http');
+const passport=require('passport');
+
+/* LOCAL IMPORTS */
+
+var {mongoose} = require('./db/mongoose');
+var {User} = require('./models/user');
+const {secret} = require('./config/config');
+var userRoutes = require('./routes/user');
 
 const port = process.env.PORT || 3000;
 
+/* SERVER SETUP */
+
 var app = express();
 var server = http.createServer(app);
+
+server.listen(port, () => {
+    console.log(`Server started on port ${port}`);
+});
+
+/* SOCKET.IO SETUP */
+
 var io = socketIO(server);
 
 io.on('connection', (socket) => {
@@ -23,6 +41,8 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('newMessage', message);
     });
 });
+
+/* APP CONFIGS */
 
 app.use((req, res, next) => {
     // console.log(req);
@@ -42,21 +62,46 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
-  // Express session midleware
+
+/* Express session midleware */
+
 app.use(session({
-    secret: 'ourDirtyLittleSecret',
+    secret,
     resave: true,
     saveUninitialized: true
 }));
 
-// Passport middleware
+/* PASSPORT MIDDLEWARE */
+
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/', (req, res) => {
-    res.send('Hello Moto...!');
+passport.serializeUser(function(user, cb) {
+  cb(null, user.id);
 });
 
-server.listen(port, () => {
-    console.log(`Server started on port ${port}`);
+passport.deserializeUser(function(id, cb) {
+    console.log(id)
+  User.findById(id, function(err, user) {
+    cb(err, user);
+  });
 });
+
+/* PASSPORT LOCAL AUTHENTICATION */
+
+var {Local} = require('./passport/local');
+
+/* ROUTES */
+
+var userRoutes = require('./routes/user');
+
+app.get('/error', (req, res) => res.send("error logging in"));
+app.use('/user', userRoutes);
+app.get('/:file', function(req, res){
+  var file = req.params.file;
+  console.log(req.params.file);
+  req.params.file == 'register' ? 
+    res.sendFile('register.html', { root : __dirname}) : 
+    res.sendFile('login.html', { root : __dirname});
+});
+app.get('/', (req, res) => res.send('Hello Moto...!'));
