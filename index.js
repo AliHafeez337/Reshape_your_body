@@ -87,9 +87,10 @@ passport.deserializeUser(function(id, cb) {
   });
 });
 
-/* PASSPORT LOCAL AUTHENTICATION */
+/* PASSPORT STRATEGIES */
 
 var {Local} = require('./passport/local');
+require('./passport/facebook');
 
 /* ROUTES */
 
