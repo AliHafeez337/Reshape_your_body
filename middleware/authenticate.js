@@ -9,7 +9,7 @@ var authenticate = (req, res, next) => {
             return Promise.reject();
         }
         
-        req.user = user;
+        req.person = user;
         req.token = token;
         next();
     }).catch((e)=>{
@@ -31,7 +31,7 @@ var adminauthenticate = (req, res, next) => {
             return Promise.reject("Sorry, you are not an admin.");
         }
 
-        req.user = user;
+        req.person = user;
         req.token = token;
         next();
     }).catch((e)=>{
@@ -53,7 +53,7 @@ var partnerauthenticate = (req, res, next) => {
             return Promise.reject("Sorry, you are not the partner.");
         }
 
-        req.user = user;
+        req.person = user;
         req.token = token;
         next();
     }).catch((e)=>{
@@ -75,7 +75,7 @@ var customerauthenticate = (req, res, next) => {
             return Promise.reject("Sorry, you are not a customer.");
         }
 
-        req.user = user;
+        req.person = user;
         req.token = token;
         next();
     }).catch((e)=>{
@@ -98,7 +98,7 @@ var userauthenticate = (req, res, next) => {
             return Promise.reject("Sorry, you are not the user.");
         }
         
-        req.user = user;
+        req.person = user;
         req.token = token;
         next();
     }).catch((e)=>{

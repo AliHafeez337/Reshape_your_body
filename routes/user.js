@@ -57,8 +57,8 @@ router.post('/register', async (req, res) => {
 
 router.post('/logout', authenticate, async (req, res) => {
     try {
-      const user = await User.findByToken(req.token);
-      var doc = await user.removeToken(req.token);
+    //   const user = await User.findByToken(req.token);
+      var doc = await req.person.removeToken(req.token);
       if (doc != null){
         res.status(200).send({
           message: "You loged out successfully."
@@ -138,6 +138,66 @@ router.get(
             // res.send the token to the user for their local storage
             // if you get the token on a request, match the token
             // if it matches, then the user is already login
+        }
+    }
+);
+
+router.get('/auth/google',
+  passport.authenticate('google', { 
+    scope: ['https://www.googleapis.com/auth/plus.login',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/userinfo.email'
+    ]})
+);
+
+router.get(
+    '/auth/google/callback',
+    passport.authenticate("google", 
+    { failureRedirect: '/user/fail' }),
+    async function(req, res) {
+        console.log(req.user._json.email);
+        if(req.user._json.email_verified){
+            const doc = await User.findByEmail(req.user._json.email);
+            // console.log(doc);
+            if (doc == null){
+                var user = new User({
+                    'email': req.user._json.email,
+                    'firstname': req.user._json.given_name,
+                    'lastname':req.user._json.family_name
+                });
+                // console.log(user);
+                
+                var doc1 = await user.save();
+                console.log(doc1);
+                const token = await doc1.generateAuthToken();
+                // var decoded = jwt_decode(token);
+                
+                var body1 = {
+                    userid: doc1._id,
+                    email: doc1.email,
+                    token: token,
+                    // tokenexp: decoded.exp
+                }
+                // console.log(body1);
+                res.status(200).send(body1);
+            }
+            else{
+                console.log(doc);
+                const token = await doc.generateAuthToken();
+                
+                var body1 = {
+                    userid: doc._id,
+                    email: doc.email,
+                    token: token,
+                    // tokenexp: decoded.exp
+                }
+                res.status(200).send(body1);
+            }
+        }
+        else{
+            res.status(401).send({
+                'errmsg': "Email is not verified on google..."
+            });
         }
     }
 );
