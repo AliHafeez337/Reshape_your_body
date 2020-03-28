@@ -77,20 +77,22 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.serializeUser(function(user, cb) {
-  cb(null, user.id);
+  cb(null, user);
 });
 
-passport.deserializeUser(function(id, cb) {
-    console.log(id)
-  User.findById(id, function(err, user) {
-    cb(err, user);
-  });
+passport.deserializeUser(function(user, cb) {
+    console.log(user)
+    cb(null, user);
+  // User.findById(user.id, function(err, user) {
+    // cb(err, user);
+  // });
 });
 
 /* PASSPORT STRATEGIES */
 
 var {Local} = require('./passport/local');
 require('./passport/facebook');
+require('./passport/google');
 
 /* ROUTES */
 
