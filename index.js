@@ -106,3 +106,4 @@ app.get('/:file', function(req, res){
     res.sendFile('login.html', { root : __dirname});
 });
 app.get('/', (req, res) => res.send('Hello Moto...!'));
+//hassan ac
