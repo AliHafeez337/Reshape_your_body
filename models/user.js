@@ -176,6 +176,15 @@ UserSchema.statics.findByToken = async function (token) {
   });
 };
 
+UserSchema.statics.findByEmail = function (email) {
+  var User = this;
+
+  return User.findOne({email}).then((user) => {
+    // console.log(user)
+    return user;
+  });
+};
+
 UserSchema.statics.findByCredentials = function (email, password) {
   var User = this; //it is just a reservation of a variable, that a user would be this from a group of all the users
 
