@@ -6,10 +6,13 @@ var authenticate = (req, res, next) => {
     User.findByToken(token).then((user)=> {
         console.log(user);
         if (!user){
-            return Promise.reject();
+            return Promise.reject("No user found.");
+        }
+        else if (user.verification != ""){
+            return Promise.reject("Non-varified user.");
         }
         
-        req.user = user;
+        req.person = user;
         req.token = token;
         next();
     }).catch((e)=>{
@@ -27,11 +30,14 @@ var adminauthenticate = (req, res, next) => {
         if (!user){
             return Promise.reject("No user found.");
         }
+        else if (user.verification != ""){
+            return Promise.reject("Non-varified user.");
+        }
         else if(user.usertype != "admin"){
             return Promise.reject("Sorry, you are not an admin.");
         }
 
-        req.user = user;
+        req.person = user;
         req.token = token;
         next();
     }).catch((e)=>{
@@ -49,11 +55,14 @@ var partnerauthenticate = (req, res, next) => {
         if (!user){
             return Promise.reject("No user found.");
         }
+        else if (user.verification != ""){
+            return Promise.reject("Non-varified user.");
+        }
         else if(user.usertype != "partner"){
             return Promise.reject("Sorry, you are not the partner.");
         }
 
-        req.user = user;
+        req.person = user;
         req.token = token;
         next();
     }).catch((e)=>{
@@ -71,11 +80,14 @@ var customerauthenticate = (req, res, next) => {
         if (!user){
             return Promise.reject("No user found.");
         }
+        else if (user.verification != ""){
+            return Promise.reject("Non-varified user.");
+        }
         else if(user.usertype != "customer"){
             return Promise.reject("Sorry, you are not a customer.");
         }
 
-        req.user = user;
+        req.person = user;
         req.token = token;
         next();
     }).catch((e)=>{
@@ -94,13 +106,71 @@ var userauthenticate = (req, res, next) => {
         if (!user){
             return Promise.reject("No user found.");
         }
+        else if (user.verification != ""){
+            return Promise.reject("Non-varified user.");
+        }
         else if(user.usertype != "user"){
             return Promise.reject("Sorry, you are not the user.");
         }
         
-        req.user = user;
+        req.person = user;
         req.token = token;
         next();
+    }).catch((e)=>{
+        // console.log(e)
+        res.status(401).send(e);
+    })
+}
+
+var adminpartnerauthenticate = (req, res, next) => {
+    var token = req.header('x-auth');
+    // var token = req.query['x-auth'];
+    // console.log(req.header)
+
+    User.findByToken(token).then((user)=> {
+        // console.log(user);
+        if (!user){
+            return Promise.reject("No user found.");
+        }
+        else if (user.verification != ""){
+            return Promise.reject("Non-varified user.");
+        }
+        else if(user.usertype == "admin" || user.usertype == "partner"){
+            req.person = user;
+            req.token = token;
+            next();
+        }
+        else{
+            return Promise.reject("Sorry, you are not the partner or an admin.");
+        }
+        
+    }).catch((e)=>{
+        // console.log(e)
+        res.status(401).send(e);
+    })
+}
+var usercustomerauthenticate = (req, res, next) => {
+    var token = req.header('x-auth');
+    // var token = req.query['x-auth'];
+
+    User.findByToken(token).then((user)=> {
+        // console.log(user);
+        if (!user){
+            return Promise.reject("No user found.");
+        }
+        else if (user.verification != ""){
+            return Promise.reject("Non-varified user.");
+        }
+        else if(user.usertype == "customer" || user.usertype == "user"){
+            req.user = user;
+            req.token = token;
+            next();
+        }
+        
+        else{
+            return Promise.reject("Sorry, you are not a customer.");
+        }
+
     }).catch((e)=>{
         // console.log(e)
         res.status(401).send(e);
@@ -112,4 +182,8 @@ module.exports = {
     adminauthenticate, 
     partnerauthenticate,
     customerauthenticate,
-    userauthenticate};
+    userauthenticate,
+    adminpartnerauthenticate,
+    usercustomerauthenticate
+
+};

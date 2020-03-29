@@ -35,7 +35,7 @@ WSS.on('connection',(ws)=>
   
 })
 
-
+module.exports={WSS}
 
 // var {WSS }= require('./broadcast/websocket-server');
 

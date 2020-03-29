@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Broadcast</title>
+   
 </head>
 <body>
     <p>Hello I am the client making the request</p>
@@ -12,6 +13,20 @@
         <input type="text" name="message" id="message">
         <Button >Submit</Button>
     </form>
-   <script src="client.js"></script>
+   <!-- <script src="client.js"></script> -->
 </body>
+
 </html> 
+
+<script>
+    const ws=new WebSocket('ws://localhost:3232')
+        ws.onmessage=((payload)=>
+        {
+        console.log(payload.data)
+        })
+        document.forms[0].onsubmit=()=>
+        {
+        const message=document.getElementById('message').value;
+        ws.send(message)
+        }
+</script>

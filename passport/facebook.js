@@ -1,18 +1,24 @@
 
 const passport = require('passport');
-const dotenv  = require("dotenv");
+// const dotenv  = require("dotenv");
 const strategy = require("passport-facebook");
 
 const FacebookStrategy = strategy.Strategy;
 
-dotenv.config();
+const {
+  facebook_clientID, 
+  facebook_clientSecret, 
+  facebook_callbackURL
+} = require('../config/config');
+
+// dotenv.config();
 
 passport.use(
   new FacebookStrategy(
     {
-      clientID: '354275715466978',
-      clientSecret: '39ad5da18dbfdae5ab124ef5b258ed0d',
-      callbackURL: 'http://localhost:3000/user/auth/facebook/callback',
+      clientID: facebook_clientID,
+      clientSecret: facebook_clientSecret,
+      callbackURL: facebook_callbackURL,
     //   passReqToCallback : true,
       profileFields: [
           'id', 
