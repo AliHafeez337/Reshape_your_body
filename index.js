@@ -11,6 +11,8 @@ const http = require('http');
 const passport = require('passport');
 
 /* LOCAL IMPORTS */
+const WSS=require('./broadcast')
+
 
 var {
   mongoose
@@ -118,11 +120,28 @@ app.get('/', (req, res) => res.send('Hello Moto...!'));
 app.get('/:file', function (req, res) {
   var file = req.params.file;
   console.log(req.params.file);
-  req.params.file == 'register' ?
+  if (req.params.file=='register')
+  {
     res.sendFile('register.html', {
-      root: __dirname
-    }) :
+          root: __dirname
+        }) 
+  }
+  else if (req.params.file=='login')
+  {
     res.sendFile('login.html', {
-      root: __dirname
-    });
+          root: __dirname
+        });
+  }
+  else{
+    res.sendFile('websocket.html', {
+          root: __dirname
+        }); 
+  }
+  // req.params.file == 'register' ?
+  //   res.sendFile('register.html', {
+  //     root: __dirname
+  //   }) :
+  //   res.sendFile('login.html', {
+  //     root: __dirname
+  //   });
 });

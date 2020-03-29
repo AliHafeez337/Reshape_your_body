@@ -149,6 +149,33 @@ var adminpartnerauthenticate = (req, res, next) => {
         res.status(401).send(e);
     })
 }
+var usercustomerauthenticate = (req, res, next) => {
+    var token = req.header('x-auth');
+    // var token = req.query['x-auth'];
+
+    User.findByToken(token).then((user)=> {
+        // console.log(user);
+        if (!user){
+            return Promise.reject("No user found.");
+        }
+        else if (user.verification != ""){
+            return Promise.reject("Non-varified user.");
+        }
+        else if(user.usertype == "customer" || user.usertype == "user"){
+            req.user = user;
+            req.token = token;
+            next();
+        }
+        
+        else{
+            return Promise.reject("Sorry, you are not a customer.");
+        }
+
+    }).catch((e)=>{
+        // console.log(e)
+        res.status(401).send(e);
+    })
+}
 
 module.exports = {
     authenticate,
@@ -156,4 +183,7 @@ module.exports = {
     partnerauthenticate,
     customerauthenticate,
     userauthenticate,
-    adminpartnerauthenticate};
+    adminpartnerauthenticate,
+    usercustomerauthenticate
+
+};
