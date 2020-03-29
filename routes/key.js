@@ -88,6 +88,7 @@ router.delete('/deleteKey', adminpartnerauthenticate, async function (req, res) 
         );
         res.status(200).send(doc1);
     } catch (e) {
+        console.log(e)
         res.status(400).send({
             errmsg: "Somethin bad happened"
         });
@@ -110,7 +111,7 @@ router.get('/getKeys', adminpartnerauthenticate, async function (req, res) {
 router.get('/getKeyByOwner', authenticate, async function (req, res) {
     try {
         var doc1 = await Key.find({
-            owner: "5e7f331c24e379222421d026"
+            owner: req.person
         });
         res.status(200).send(doc1);
     } catch (e) {
