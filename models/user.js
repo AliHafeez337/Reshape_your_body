@@ -9,6 +9,10 @@ const {secret} = require('../config/config');
 const {mongoose} = require('../db/mongoose');
 
 var UserSchema = new mongoose.Schema({
+  verification: {
+    required: false,
+    type: String
+  },
   usertype: {
     type: String,
     required: true,

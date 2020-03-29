@@ -98,8 +98,8 @@ require('./passport/google');
 
 var userRoutes = require('./routes/user');
 
-app.get('/error', (req, res) => res.send("error logging in"));
 app.use('/user', userRoutes);
+app.get('/', (req, res) => res.send('Hello Moto...!'));
 app.get('/:file', function(req, res){
   var file = req.params.file;
   console.log(req.params.file);
@@ -107,4 +107,3 @@ app.get('/:file', function(req, res){
     res.sendFile('register.html', { root : __dirname}) : 
     res.sendFile('login.html', { root : __dirname});
 });
-app.get('/', (req, res) => res.send('Hello Moto...!'));

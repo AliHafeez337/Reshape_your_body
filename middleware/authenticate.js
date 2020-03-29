@@ -6,7 +6,10 @@ var authenticate = (req, res, next) => {
     User.findByToken(token).then((user)=> {
         console.log(user);
         if (!user){
-            return Promise.reject();
+            return Promise.reject("No user found.");
+        }
+        else if (user.verification != ""){
+            return Promise.reject("Non-varified user.");
         }
         
         req.person = user;
@@ -26,6 +29,9 @@ var adminauthenticate = (req, res, next) => {
         // console.log(user);
         if (!user){
             return Promise.reject("No user found.");
+        }
+        else if (user.verification != ""){
+            return Promise.reject("Non-varified user.");
         }
         else if(user.usertype != "admin"){
             return Promise.reject("Sorry, you are not an admin.");
@@ -49,6 +55,9 @@ var partnerauthenticate = (req, res, next) => {
         if (!user){
             return Promise.reject("No user found.");
         }
+        else if (user.verification != ""){
+            return Promise.reject("Non-varified user.");
+        }
         else if(user.usertype != "partner"){
             return Promise.reject("Sorry, you are not the partner.");
         }
@@ -70,6 +79,9 @@ var customerauthenticate = (req, res, next) => {
         // console.log(user);
         if (!user){
             return Promise.reject("No user found.");
+        }
+        else if (user.verification != ""){
+            return Promise.reject("Non-varified user.");
         }
         else if(user.usertype != "customer"){
             return Promise.reject("Sorry, you are not a customer.");
@@ -93,6 +105,9 @@ var userauthenticate = (req, res, next) => {
         // console.log(user);
         if (!user){
             return Promise.reject("No user found.");
+        }
+        else if (user.verification != ""){
+            return Promise.reject("Non-varified user.");
         }
         else if(user.usertype != "user"){
             return Promise.reject("Sorry, you are not the user.");
