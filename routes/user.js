@@ -25,17 +25,24 @@ router.post('/login',
     { failureRedirect: '/user/fail' }),
     async function(req, res) {
         // console.log(req.user)
-        const token = await req.user.generateAuthToken();
-        // var decoded = jwt_decode(token);
-        
-        var body1 = {
-            userid: req.user._id,
-            email: req.user.email,
-            token: token,
-            // tokenexp: decoded.exp
+        if (req.user.verification == ""){
+            const token = await req.user.generateAuthToken();
+            // var decoded = jwt_decode(token);
+            
+            var body1 = {
+                userid: req.user._id,
+                email: req.user.email,
+                token: token,
+                // tokenexp: decoded.exp
+            }
+            // console.log(body1);
+            res.send(body1);
         }
-        // console.log(body1);
-        res.send(body1);
+        else{
+            res.status(401).send({
+                errmsg: "You have to confirm your email address first."
+            })
+        }
     }
 );
 
