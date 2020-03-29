@@ -122,9 +122,38 @@ var userauthenticate = (req, res, next) => {
     })
 }
 
+var adminpartnerauthenticate = (req, res, next) => {
+    var token = req.header('x-auth');
+    // var token = req.query['x-auth'];
+    // console.log(req.header)
+
+    User.findByToken(token).then((user)=> {
+        // console.log(user);
+        if (!user){
+            return Promise.reject("No user found.");
+        }
+        else if (user.verification != ""){
+            return Promise.reject("Non-varified user.");
+        }
+        else if(user.usertype == "admin" || user.usertype == "partner"){
+            req.person = user;
+            req.token = token;
+            next();
+        }
+        else{
+            return Promise.reject("Sorry, you are not the partner or an admin.");
+        }
+        
+    }).catch((e)=>{
+        // console.log(e)
+        res.status(401).send(e);
+    })
+}
+
 module.exports = {
     authenticate,
     adminauthenticate, 
     partnerauthenticate,
     customerauthenticate,
-    userauthenticate};
+    userauthenticate,
+    adminpartnerauthenticate};
