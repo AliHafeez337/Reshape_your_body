@@ -77,26 +77,29 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.serializeUser(function(user, cb) {
-  cb(null, user.id);
+  cb(null, user);
 });
 
-passport.deserializeUser(function(id, cb) {
-    console.log(id)
-  User.findById(id, function(err, user) {
-    cb(err, user);
-  });
+passport.deserializeUser(function(user, cb) {
+    console.log(user)
+    cb(null, user);
+  // User.findById(user.id, function(err, user) {
+    // cb(err, user);
+  // });
 });
 
-/* PASSPORT LOCAL AUTHENTICATION */
+/* PASSPORT STRATEGIES */
 
 var {Local} = require('./passport/local');
+require('./passport/facebook');
+require('./passport/google');
 
 /* ROUTES */
 
 var userRoutes = require('./routes/user');
 
-app.get('/error', (req, res) => res.send("error logging in"));
 app.use('/user', userRoutes);
+app.get('/', (req, res) => res.send('Hello Moto...!'));
 app.get('/:file', function(req, res){
   var file = req.params.file;
   console.log(req.params.file);
@@ -104,4 +107,3 @@ app.get('/:file', function(req, res){
     res.sendFile('register.html', { root : __dirname}) : 
     res.sendFile('login.html', { root : __dirname});
 });
-app.get('/', (req, res) => res.send('Hello Moto...!'));
