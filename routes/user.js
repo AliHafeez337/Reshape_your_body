@@ -104,7 +104,7 @@ router.post('/register', async (req, res) => {
                     border-radius: 10px;"
                 >Welcome...
                 </button></a><br />
-                <h5>Or request a new email</h5>
+                <h5>Or request a new email by clicking the button below.</h5>
                 <a 
                     href="http://localhost:3000/user/email/${doc1.email}"
                     style="color: white;
@@ -122,7 +122,7 @@ router.post('/register', async (req, res) => {
                     color: black;
                     border: 2px solid #e7e7e7;
                     border-radius: 10px;"
-                >Request a new email
+                >Request a new code
                 </button></a><br /><br />
             </div>
             `;
@@ -181,7 +181,7 @@ router.post('/register', async (req, res) => {
                     border-radius: 10px;"
                 >Welcome...
                 </button></a><br />
-                <h5>Or request a new email</h5>
+                <h5>Or request a new email by clicking the button below.</h5>
                 <a 
                     href="http://localhost:3000/user/email/${user.email}"
                     style="color: white;
@@ -199,7 +199,7 @@ router.post('/register', async (req, res) => {
                     color: black;
                     border: 2px solid #e7e7e7;
                     border-radius: 10px;"
-                >Request a new email
+                >Request a new code
                 </button></a><br /><br />
             </div>
             `;
@@ -427,7 +427,7 @@ router.get('/email/:em', async (req, res) => {
                     border-radius: 10px;"
                 >Welcome...
                 </button></a><br />
-                <h5>Or request a new email</h5>
+                <h5>Or request a new email by clicking the button below.</h5>
                 <a 
                     href="http://localhost:3000/user/email/${doc.email}"
                     style="color: white;
@@ -445,7 +445,7 @@ router.get('/email/:em', async (req, res) => {
                     color: black;
                     border: 2px solid #e7e7e7;
                     border-radius: 10px;"
-                >Request a new email
+                >Request a new code
                 </button></a><br /><br />
             </div>
             `;
