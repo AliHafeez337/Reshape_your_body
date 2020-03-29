@@ -12,6 +12,9 @@ var {
 var {
     authenticate
 } = require('../middleware/authenticate');
+var {
+    adminpartnerauthenticate
+} = require('../middleware/authenticate');
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -40,7 +43,7 @@ function generateProductKey() {
     return keyString;
 }
 
-router.post('/generateKey', async function (req, res) {
+router.post('/generateKey', adminpartnerauthenticate, async function (req, res) {
     var keyGen = generateProductKey();
     var body = {
         key: keyGen,
@@ -57,10 +60,10 @@ router.post('/generateKey', async function (req, res) {
 
 });
 
-router.put('/useKey', async function (req, res) {
+router.put('/useKey', adminpartnerauthenticate, async function (req, res) {
     var body = {
         used: true,
-        owner: "5e7f331c24e379222421d026"
+        owner: req.person
     }
     try {
         var doc1 = await Key.findByIdAndUpdate(
@@ -78,7 +81,7 @@ router.put('/useKey', async function (req, res) {
 
 });
 
-router.delete('/deleteKey', async function (req, res) {
+router.delete('/deleteKey', adminpartnerauthenticate, async function (req, res) {
     try {
         var doc1 = await Key.findByIdAndDelete(
             req.query.keyId
@@ -92,7 +95,7 @@ router.delete('/deleteKey', async function (req, res) {
 
 });
 
-router.get('/getKeys', async function (req, res) {
+router.get('/getKeys', adminpartnerauthenticate, async function (req, res) {
     try {
         var doc1 = await Key.find({});
         res.status(200).send(doc1);
@@ -104,7 +107,7 @@ router.get('/getKeys', async function (req, res) {
 
 });
 
-router.get('/getKeyByOwner', async function (req, res) {
+router.get('/getKeyByOwner', authenticate, async function (req, res) {
     try {
         var doc1 = await Key.find({
             owner: "5e7f331c24e379222421d026"
@@ -118,7 +121,7 @@ router.get('/getKeyByOwner', async function (req, res) {
 
 });
 
-router.get('/getKeyById', async function (req, res) {
+router.get('/getKeyById', adminpartnerauthenticate, async function (req, res) {
     try {
         var doc1 = await Key.findById(req.query.keyId);
         res.status(200).send(doc1);

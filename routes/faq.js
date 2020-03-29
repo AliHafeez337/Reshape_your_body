@@ -10,15 +10,17 @@ var {
     Faq
 } = require('../models/faq');
 var {
-    authenticate
+    authenticate,
+    adminpartnerauthenticate,
+    adminauthenticate
 } = require('../middleware/authenticate');
 // 1
-router.post('/addQuestion', async function (req, res) {
+router.post('/addQuestion', adminpartnerauthenticate, async function (req, res) {
     try {
         var body = {
             category: req.body.category,
             question: req.body.question,
-            askedBy: '5e7f331c24e379222421d026'
+            askedBy: req.person
         }
         var faqM = new Faq(body);
         await faqM.save();
@@ -30,11 +32,11 @@ router.post('/addQuestion', async function (req, res) {
     }
 });
 // 2
-router.put('/addComment', async function (req, res) {
+router.put('/addComment', adminpartnerauthenticate, async function (req, res) {
     try {
         var body = {
             reply: req.body.reply,
-            by: '5e7f331c24e379222421d026',
+            by: req.person,
             createdAt: Date.now(),
             likes: 0
         }
@@ -56,7 +58,7 @@ router.put('/addComment', async function (req, res) {
     }
 });
 // 3
-router.put('/faqLike', async function (req, res) {
+router.put('/faqLike', adminpartnerauthenticate, async function (req, res) {
     try {
         var doc1 = await Faq.findByIdAndUpdate(
             req.query.faqId, {
@@ -75,7 +77,7 @@ router.put('/faqLike', async function (req, res) {
     }
 });
 // 4
-router.put('/commentLike', async function (req, res) {
+router.put('/commentLike', adminpartnerauthenticate, async function (req, res) {
     try {
         var doc1 = await Faq.findOneAndUpdate({
             'discussion._id': req.query.replyId
@@ -93,7 +95,7 @@ router.put('/commentLike', async function (req, res) {
 });
 
 // 5
-router.put('/updateStatus', async function (req, res) {
+router.put('/updateStatus', adminauthenticate, async function (req, res) {
     try {
         var doc1 = await Faq.findByIdAndUpdate(
             req.query.faqId, {
@@ -110,7 +112,7 @@ router.put('/updateStatus', async function (req, res) {
     }
 });
 // 6
-router.delete('/deleteQuestion', async function (req, res) {
+router.delete('/deleteQuestion', adminauthenticate, async function (req, res) {
     try {
         var doc1 = await Faq.findByIdAndDelete(
             req.query.faqId
@@ -123,8 +125,22 @@ router.delete('/deleteQuestion', async function (req, res) {
     }
 
 });
+
+router.delete('/deleteQuestionByOwner', adminpartnerauthenticate, async function (req, res) {
+    try {
+        var doc1 = await Faq.findOneAndDelete({
+            'askedBy': req.person
+        });
+        res.status(200).send(doc1);
+    } catch (e) {
+        res.status(400).send({
+            errmsg: "Somethin bad happened"
+        });
+    }
+
+});
 // 7
-router.put('/deleteComment', async function (req, res) {
+router.put('/deleteComment', adminpartnerauthenticate, async function (req, res) {
     try {
         var doc1 = await Faq.findByIdAndUpdate(
             req.query.faqId, {
@@ -146,7 +162,7 @@ router.put('/deleteComment', async function (req, res) {
 });
 
 // 8
-router.get('/getFaqs', async function (req, res) {
+router.get('/getFaqs', adminpartnerauthenticate, async function (req, res) {
     try {
         var doc1 = await Faq.find({});
         res.status(200).send(doc1);
@@ -159,7 +175,7 @@ router.get('/getFaqs', async function (req, res) {
 });
 
 // 9
-router.get('/getFaqByCatogory', async function (req, res) {
+router.get('/getFaqByCatogory', adminpartnerauthenticate, async function (req, res) {
     try {
         var doc1 = await Faq.find({
             category: req.body.category
@@ -174,7 +190,7 @@ router.get('/getFaqByCatogory', async function (req, res) {
 });
 
 // 10
-router.get('/geFaqById', async function (req, res) {
+router.get('/geFaqById', adminpartnerauthenticate, async function (req, res) {
     try {
         var doc1 = await Faq.findById(req.query.FaqId);
         res.status(200).send(doc1);
@@ -187,10 +203,10 @@ router.get('/geFaqById', async function (req, res) {
 });
 
 // 11
-router.get('/getFaqByOwner', async function (req, res) {
+router.get('/getFaqByOwner', adminpartnerauthenticate, async function (req, res) {
     try {
         var doc1 = await Faq.find({
-            askedBy: "5e7f331c24e379222421d026"
+            askedBy: req.person
         });
         res.status(200).send(doc1);
     } catch (e) {
