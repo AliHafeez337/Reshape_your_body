@@ -13,6 +13,11 @@ var UserSchema = new mongoose.Schema({
     required: false,
     type: String
   },
+  forgetToken:{
+      type: String,
+      required: false,
+      default: ''
+  },
   usertype: {
     type: String,
     required: true,
@@ -225,14 +230,29 @@ UserSchema.pre('save', function (next) {
   }
 });
 
+// THE FUNCTION BELOW IS ALMOST CORRECT, I REACHED PRETTY FAR BUT DON'T KNOW IS WHICH FIELD TO PUT THE NEW PASSWORD... NO FIELD IS WORKING
+
 // UserSchema.pre('findOneAndUpdate', function(next){
 //   var user = this;
-//   // console.log(user._update.password);
-//   // bcrypt.genSalt(10, (err, salt) => {
-//   //   bcrypt.hash(user._update.password, salt, (err, hash) => {
-//   //     user._update.password = hash;
-//   //   });
-//   // });
+//   console.log(user.getUpdate());
+//   if (user.getUpdate().password != null){
+//     try {
+//       bcrypt.genSalt(10, (err, salt) => {
+//         // console.log("password is here...");
+//         // console.log(this.getUpdate());
+//         bcrypt.hash(user.getUpdate().$set.password, salt, (err, hash) => {
+//           console.log('hash');
+//           user.getUpdate().$set.password = hash;
+//           user.password = hash;
+//           // console.log(user.getUpdate().$set.password);
+//           console.log(user);
+//           next();
+//         });
+//       });
+//     } catch (error) {
+//         return next(error);
+//     }
+//   }
 //   next();
 // });
 

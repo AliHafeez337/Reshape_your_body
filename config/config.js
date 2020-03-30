@@ -1,6 +1,7 @@
 module.exports = {
     address: 'http://localhost:3000/',
     secret: "I'll not work if something goes wrong again.",
+    forgetSecret: "Hahahahahahahahahhahahahahah",
     email: 'codecrafterz@gmail.com',
     password: 'DqicdXPpBRXp488',
     facebook_clientID: '354275715466978',

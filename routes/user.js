@@ -4,12 +4,16 @@ const passport = require('passport');
 const _ = require('lodash');
 const cryptoRandomString = require('crypto-random-string');
 var nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken');
+const jwt_decode = require('jwt-decode');
+const bcrypt = require('bcryptjs');
  
 var {User} = require('../models/user');
 var {authenticate} = require('../middleware/authenticate');
 const {
     email, 
-    password
+    password,
+    forgetSecret
   } = require('../config/config');
 
 var transporter = nodemailer.createTransport({
@@ -225,8 +229,10 @@ router.post('/register', async (req, res) => {
                 else
                   console.log(info);
             });
-            doc2.msg = "Please, also confirm your email."
-            res.status(200).send(doc2);
+            // res.status(200).send(doc2);
+            res.status(200).send({
+                "msg": "You just need to confirm your email address and then you are good to go..."
+            });
         }
     }
     catch(e) {
@@ -254,6 +260,154 @@ router.post('/logout', authenticate, async (req, res) => {
     } catch (e) {
       res.status(400).send(e);
     }
+});
+
+router.post('/forget', async (req, res) => {
+    var body = _.pick(req.body, [
+        'email',
+    ]);
+    var code = cryptoRandomString({length: 6, type: 'numeric'});
+    var token = 
+      jwt.sign({
+        data: code
+      }, forgetSecret, { expiresIn: 600 });
+
+    try{
+        var doc = await User.findOneAndUpdate(
+            { email: body.email }, 
+            { forgetToken: token }, 
+            {new: true});
+        console.log(doc);
+    
+        if (doc != null){
+            var mailBody = `
+            <div style="
+                background-color:#fafafa;
+                padding-left: 20px;"><br />
+                <h1>Hi, ${doc.firstname}&nbsp;${doc.lastname}</h1>
+                <h3>Please, don't share this code with anyone.</h3>
+                <h5>Below is the code you'll need for the password reset.</h5>
+                <h3>${code}</h3>
+                <h5>This code will expire in 10 minutes.</h5><br />
+            </div>
+            `;
+        
+            const mailOptions = {
+                from: '"CodeCrafterz 👻" <codecrafterz@gmail.com>', // sender address
+                to: doc.email, // list of receivers
+                subject: 'Forget password code', // Subject line
+                html: mailBody
+            };
+            transporter.sendMail(mailOptions, function (err, info) {
+                if(err)
+                  console.log(err)
+                else
+                  console.log(info);
+            });
+            // res.status(200).send(doc2);
+            res.status(200).send({
+                "email": doc.email,
+                "msg": "You just need to confirm your email address and then you are good to go..."
+            });
+        }
+        else{
+            res.status(401).send({
+                "errmsg": "No user exists with this email address..."
+            });
+        }
+    }
+    catch(e){
+        console.log(e);
+        res.status(400).send("Encountered some error.")
+    }
+});
+
+var genHash = async (password) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            bcrypt.genSalt(10, (err, salt) => {
+                bcrypt.hash(password, salt, (err, hash) => {
+                    // console.log(hash);
+                    // console.log('hhashhhhhh');
+                    resolve(hash);
+                });
+            });
+        }
+        catch(e){
+            reject();
+        }
+    });
+}
+
+router.patch("/reset", async (req, res) => {
+    var body = _.pick(req.body, [
+        'code', "email", "password"
+    ]);
+    try{
+        const doc = await User.findByEmail(body.email);
+        // console.log(doc);
+        if (doc != null){
+            if (doc.forgetToken != ""){
+                var decoded = jwt_decode(doc.forgetToken);
+                // console.log('see here...');
+                var a = decoded.exp.toString();
+                var b = (0).toString();
+                // console.log(a);
+                // console.log(b);
+                // console.log(a+b+b+b);
+                // console.log(Date.now());
+                if (Date.now() < a+b+b+b){
+                    if (body.code == decoded.data){
+
+                        genHash(body.password).then(async (hash) => {
+                            console.log(hash);
+                            body.password = hash;
+                            console.log(body);
+                            var doc1 = await User.findByIdAndUpdate(
+                                {_id:  doc._id},
+                                { password: body.password,
+                                    forgetToken: ''},
+                                {new: true}
+                                );
+                            console.log(doc1);
+                            if (doc != null){
+                                res.status(200).send({
+                                    msg: "Password updated successfully... enjoy!"
+                                })
+                            }
+                            else{
+                                res.status(400).send({
+                                errmsg: "Document to be updated, not found."
+                                })
+                            }
+                        }).catch((e) => {
+                            console.log(e);
+                            res.status(400).send({
+                                errmsg: "Couldn't generate the hash."
+                            })
+                        });
+                    }
+                    else{
+                        res.status(401).send("Sorry, the code you entered is not correct...");
+                    }
+                }
+                else{
+                    res.status(401).send("Sorry, you are late... Try again please by clicking forget password again...");
+                }
+            }
+            else{
+                res.status(401).send("You may have already reset your password, please click forget password again.")
+            }
+        }
+        else{
+            res.status(401).send("No user exists with this email.")
+        }
+    }
+    catch(e){
+        console.log(e);
+        res.status(400).send("Encountered some error.")
+    }
+
 });
 
 router.get("/auth/facebook", 
