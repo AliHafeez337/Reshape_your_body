@@ -342,7 +342,6 @@ var genHash = async (password) => {
 router.patch('/edit', authenticate, async (req, res) => {
     
     var body = _.pick(req.body, [
-        'email',
         'usertype',
         'firstname',
         'lastname',
@@ -392,6 +391,92 @@ router.patch('/edit', authenticate, async (req, res) => {
       else{
         res.send(doc);
       }
+    }
+});
+
+router.patch('/editEmail', authenticate, async (req, res) => {
+    var body = _.pick(req.body, [
+        'email',
+    ]);
+    var randomstring = cryptoRandomString({length: 1000, type: 'url-safe'});
+    
+    var token = 
+        jwt.sign({
+        code: randomstring,
+        email: body.email
+        }, forgetSecret, { expiresIn: 600 });
+
+    try{
+        var doc = await User.findOneAndUpdate(
+            { _id: req.person._id }, 
+            { emailToBe: token }, 
+            {new: true});
+        // console.log(doc);
+            console.log(`http://localhost:3000/user/change/${randomstring}/email/${req.person.email}/toBe/${body.email}`);
+        if (doc != null){
+            var mailBody = `
+            <div style="
+                background-color:#fafafa;
+                padding-left: 20px;"><br />
+                <h1>Hi, ${req.person.firstname}&nbsp;${req.person.lastname}</h1>
+                <h3>You are one step away from updatting your email address.</h3>
+                <h5>Please confirm your email by clicking the button below</h5>
+                <a 
+                    href="http://localhost:3000/user/change/${randomstring}/email/${req.person.email}/toBe/${body.email}"
+                    style="color: white;
+                    text-decoration: none;">
+                    <button style="
+                    background-color:#4CAF50;
+                    border: none;
+                    color: white;
+                    padding: 16px 32px;
+                    text-align: center;
+                    text-decoration: none;
+                    display: inline-block;
+                    font-size: 16px;
+                    margin: 4px 2px;
+                    transition-duration: 0.4s;
+                    cursor: pointer;
+                    border-radius: 10px;"
+                >Welcome...
+                </button></a><br />
+                <h3>This button is valid for next 10 minutes.</h3>
+                <h3>If you don't know about this, then you can ignore it.</h3><br />
+            </div>
+            `;
+        
+            const mailOptions = {
+                from: '"CodeCrafterz 👻" <codecrafterz@gmail.com>', // sender address
+                to: body.email, // list of receivers
+                subject: 'Confirm Your New Email', // Subject line
+                html: mailBody
+            };
+            transporter.sendMail(mailOptions, function (err, info) {
+                if(err){
+                    console.log(err);
+                    res.status(401).send({
+                        "errmsg": "Unable to send the confirmation email."
+                    })
+                }
+                else{
+                    console.log(info);
+                    res.status(200).send({
+                        "msg": "You can confirm the new email by view the new email and click the 'Welcome...' button. Note: The email will be valid for 10 minutes."
+                    })
+                }
+            });        
+        }
+        else{
+            res.status(401).send({
+                "errmsg": "Unable to update user, maybe the user doesn't exist."
+            })
+        }
+    }
+    catch(e){
+        console.log(e);
+        res.status(401).send({
+            "errmsg": "Something went wrong in whole process."
+        })
     }
 });
 
@@ -597,7 +682,9 @@ router.get(
 );
 
 router.get("/fail", (req, res) => {
-  res.send("Failed login attempt...!");
+  res.status(401).send({
+      "errmsg": "Failed login attempt...!"
+  });
 });
 
 router.get('/email/:em', async (req, res) => {
@@ -693,6 +780,74 @@ router.get('/email/:em', async (req, res) => {
     else{
         res.status(401).send({
             errmsg: "Unauthorized access."
+        });
+    }
+});
+
+router.get('/change/:str/email/:email/toBe/:toBe', authenticate, async (req, res) => {
+    var str = req.params.str;
+    var email = req.params.email;
+    var toBe = req.params.toBe;
+    try{
+        if(req.person.email == email){
+            const doc = await User.findByEmail(email);
+            if(doc != null){                
+                var decoded = jwt_decode(doc.emailToBe);
+                // console.log('see here...');
+                var a = decoded.exp.toString();
+                var b = (0).toString();
+                // console.log(a);
+                // console.log(b);
+                // console.log(a+b+b+b);
+                // console.log(Date.now());
+                console.log(decoded);
+                if (Date.now() < a+b+b+b){
+                    if (decoded.code == str){
+                        var doc1 = await User.findOneAndUpdate({
+                            _id: doc.id
+                            }, 
+                            {
+                                email: decoded.email
+                            }, 
+                            {new: true});
+                        // console.log(doc1);
+                        if (doc1 != null){
+                            res.status(200).send(doc1);
+                        }
+                        else{
+                            res.status(401).send({
+                                errmsg: "Unable to update email address..."
+                            });
+                        }
+                    }
+                    else{
+                        res.status(401).send({
+                            errmsg: "You provided the wrong code..."
+                        });
+                    }
+                }
+                else{
+                    res.status(401).send({
+                        errmsg: "Time out! You are late..."
+                    });
+                }
+    
+            }
+            else{
+                res.status(401).send({
+                    errmsg: "No user exists with this email."
+                });
+            }
+        }
+        else{
+            res.status(401).send({
+                errmsg: "Unauthorized access."
+            });
+        }
+    }
+    catch(e){
+        res.status(401).send({
+            errmsg: "Something went wrong."
         });
     }
 });
