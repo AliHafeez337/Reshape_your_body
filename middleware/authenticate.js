@@ -162,7 +162,7 @@ var usercustomerauthenticate = (req, res, next) => {
             return Promise.reject("Non-varified user.");
         }
         else if(user.usertype == "customer" || user.usertype == "user"){
-            req.user = user;
+            req.person = user;
             req.token = token;
             next();
         }
