@@ -339,6 +339,62 @@ var genHash = async (password) => {
     });
 }
 
+router.patch('/edit', authenticate, async (req, res) => {
+    
+    var body = _.pick(req.body, [
+        'email',
+        'usertype',
+        'firstname',
+        'lastname',
+        'birthdate',
+        'phone',
+        'address1',
+        'address2',
+        'city',
+        'postal',
+        'country',
+        'password'
+    ]);
+
+    if (body.password != undefined && body.password != ''){
+      if (body.password.length < 6){
+        res.status(406).send({
+          errmsg: "Password length can not be less than 6."
+        })
+      }
+      else{
+        body.password = await genHash(body.password);
+        console.log(body);
+        var doc = await User.findByIdAndUpdate(
+            {_id:  req.person._id}, body, {new: true}
+            );
+        console.log(doc);
+        if (doc == null){
+          res.status(400).send({
+            errmsg: "Document to be updated not found."
+          })
+        }
+        else{
+          res.send(doc);
+        }
+      }
+    }
+    else{
+      var doc = await User.findByIdAndUpdate(
+          {_id:  req.person._id}, body, {new: true}
+          );
+      console.log(doc);
+      if (doc == null){
+        res.status(400).send({
+          errmsg: "Document to be updated not found."
+        })
+      }
+      else{
+        res.send(doc);
+      }
+    }
+});
+
 router.patch("/reset", async (req, res) => {
     var body = _.pick(req.body, [
         'code', "email", "password"
