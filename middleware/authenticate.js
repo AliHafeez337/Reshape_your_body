@@ -17,7 +17,9 @@ var authenticate = (req, res, next) => {
         next();
     }).catch((e)=>{
         // console.log(e)
-        res.status(401).send(e);
+        res.status(401).send({
+            "errmsg": "Token missing, Unauthorized."
+        });
     })
 }
 
@@ -42,7 +44,9 @@ var adminauthenticate = (req, res, next) => {
         next();
     }).catch((e)=>{
         // console.log(e)
-        res.status(401).send(e);
+        res.status(401).send({
+            "errmsg": "Token missing, Unauthorized."
+        });
     })
 }
 
@@ -67,7 +71,9 @@ var partnerauthenticate = (req, res, next) => {
         next();
     }).catch((e)=>{
         // console.log(e)
-        res.status(401).send(e);
+        res.status(401).send({
+            "errmsg": "Token missing, Unauthorized."
+        });
     })
 }
 
@@ -92,7 +98,9 @@ var customerauthenticate = (req, res, next) => {
         next();
     }).catch((e)=>{
         // console.log(e)
-        res.status(401).send(e);
+        res.status(401).send({
+            "errmsg": "Token missing, Unauthorized."
+        });
     })
 }
 
@@ -118,7 +126,9 @@ var userauthenticate = (req, res, next) => {
         next();
     }).catch((e)=>{
         // console.log(e)
-        res.status(401).send(e);
+        res.status(401).send({
+            "errmsg": "Token missing, Unauthorized."
+        });
     })
 }
 
@@ -146,7 +156,9 @@ var adminpartnerauthenticate = (req, res, next) => {
         
     }).catch((e)=>{
         // console.log(e)
-        res.status(401).send(e);
+        res.status(401).send({
+            "errmsg": "Token missing, Unauthorized."
+        });
     })
 }
 var usercustomerauthenticate = (req, res, next) => {
@@ -173,7 +185,9 @@ var usercustomerauthenticate = (req, res, next) => {
 
     }).catch((e)=>{
         // console.log(e)
-        res.status(401).send(e);
+        res.status(401).send({
+            "errmsg": "Token missing, Unauthorized."
+        });
     })
 }
 
@@ -185,5 +199,4 @@ module.exports = {
     userauthenticate,
     adminpartnerauthenticate,
     usercustomerauthenticate
-
 };

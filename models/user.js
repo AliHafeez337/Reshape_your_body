@@ -18,6 +18,11 @@ var UserSchema = new mongoose.Schema({
       required: false,
       default: ''
   },
+  emailToBe:{
+    type: String,
+    required: false,
+    default: ''
+  },
   usertype: {
     type: String,
     required: true,
