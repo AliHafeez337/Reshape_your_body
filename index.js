@@ -112,7 +112,9 @@ require('./passport/google');
 /* ROUTES */
 
 var userRoutes = require('./routes/user');
+var requestsRoute=require('./routes/requests')
 
+app.use('/request',requestsRoute)
 app.use('/user', userRoutes);
 app.use('/key', keyRoutes);
 app.use('/faq', faqRoutes);
