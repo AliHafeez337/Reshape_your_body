@@ -414,7 +414,7 @@ var genHash = async (password) => {
 router.post('/adminregister', adminauthenticate, upload.single('photo'), async (req, res) => {
 
     console.log('admin registers')
-    // try {
+    try {
         var body = _.pick(req.body, [
             'email',
             'usertype',
@@ -523,78 +523,64 @@ router.post('/adminregister', adminauthenticate, upload.single('photo'), async (
             var randomstring = cryptoRandomString({length: 1000, type: 'url-safe'});
             
             body.verification = randomstring;
-            var pass
-            // body.password = await genHash(password);
-            // console.log(password);
-            genHash(password).then(async (hash) => {
-                body.password = hash;
-                // console.log(hash);
+            body.password = password;
 
-                var ajeeb = new User(body);
-                // console.log(ajeeb);
-    
-                var doc2 = await ajeeb.save();
-                // console.log(doc2);
-                
-                var mailBody = `
-                <div style="
-                    background-color:#fafafa;
-                    padding-left: 20px;"><br />
-                    <h1>Hi, ${body.firstname}&nbsp;${body.lastname}</h1>
-                    <h3>Your new password is: ${password}</h3>
-                    <h5>Please confirm your email by clicking the button below</h5>
-                    <a 
-                        href="http://localhost:3000/user/${randomstring}/email/${body.email}"
-                        style="color: white;
-                        text-decoration: none;">
-                        <button style="
-                        background-color:#4CAF50;
-                        border: none;
-                        color: white;
-                        padding: 16px 32px;
-                        text-align: center;
-                        text-decoration: none;
-                        display: inline-block;
-                        font-size: 16px;
-                        margin: 4px 2px;
-                        transition-duration: 0.4s;
-                        cursor: pointer;
-                        border-radius: 10px;"
-                    >Welcome...
-                    </button></a><br />
-                </div>
-                `;
-    
-                const mailOptions = {
-                    from: '"CodeCrafterz 👻" <codecrafterz@gmail.com>', // sender address
-                    to: ajeeb.email, // list of receivers
-                    subject: 'Confirm Your Email', // Subject line
-                    html: mailBody
-                };
-                transporter.sendMail(mailOptions, function (err, info) {
-                    if(err){
-                        console.log(err);
-                        res.status(200).send({
-                            "msg": "Unable to send email..."
-                        });
-                    }
-                    else{
-                        console.log(info);
-                        res.status(200).send({
-                            "msg": "Done, the user just needs to confirm the email..."
-                        });
-                    }
-                });
-            }).catch((e) => {
-                console.log(e);
-                res.status(400).send({
-                    errmsg: "Couldn't generate the hash."
-                })
+            var noway = new User(body);
+            console.log(noway);
+
+            var doc2 = await noway.save();
+            console.log(doc2);
+            
+            var mailBody = `
+            <div style="
+                background-color:#fafafa;
+                padding-left: 20px;"><br />
+                <h1>Hi, ${body.firstname}&nbsp;${body.lastname}</h1>
+                <h3>Your new password is: ${password}</h3>
+                <h5>Please confirm your email by clicking the button below</h5>
+                <a 
+                    href="http://localhost:3000/user/${randomstring}/email/${body.email}"
+                    style="color: white;
+                    text-decoration: none;">
+                    <button style="
+                    background-color:#4CAF50;
+                    border: none;
+                    color: white;
+                    padding: 16px 32px;
+                    text-align: center;
+                    text-decoration: none;
+                    display: inline-block;
+                    font-size: 16px;
+                    margin: 4px 2px;
+                    transition-duration: 0.4s;
+                    cursor: pointer;
+                    border-radius: 10px;"
+                >Welcome...
+                </button></a><br />
+            </div>
+            `;
+
+            const mailOptions = {
+                from: '"CodeCrafterz 👻" <codecrafterz@gmail.com>', // sender address
+                to: noway.email, // list of receivers
+                subject: 'Confirm Your Email', // Subject line
+                html: mailBody
+            };
+            transporter.sendMail(mailOptions, function (err, info) {
+                if(err){
+                    console.log(err);
+                    res.status(200).send({
+                        "msg": "Unable to send email..."
+                    });
+                }
+                else{
+                    console.log(info);
+                    res.status(200).send({
+                        "msg": "Done, the user just needs to confirm the email..."
+                    });
+                }
             });
-            // res.status(200).send(doc2);
         }
-    try {
-
     } catch (e) {
         res.status(400).send({
             "errmsg": "Something went wrong in the whole process..."
