@@ -13,7 +13,6 @@ const RequestSchema = new mongoose.Schema({
   status:{
             type:String,
             enum:['reviewed', 'pending', 'rejected', 'acepted'],
-            default:'pending'
          },
   createdAt: {
             type: Date,

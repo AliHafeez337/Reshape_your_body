@@ -1062,7 +1062,8 @@ router.get('/email/:em', async (req, res) => {
             </div>
             `;
 
-            const mailOptions = {
+            const mailOptions =
+             {
                 from: '"CodeCrafterz 👻" <codecrafterz@gmail.com>', // sender address
                 to: doc.email, // list of receivers
                 subject: 'Confirm Your Email', // Subject line
