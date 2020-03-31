@@ -218,7 +218,10 @@ UserSchema.statics.findByCredentials = function (email, password) {
 
     return new Promise((resolve, reject) => {
       // Use bcrypt.compare to compare password and user.password
+      console.log(password);
+      console.log(user.password);
       bcrypt.compare(password, user.password, (err, res) => {
+        console.log(`password matches ? ${res}`);
         if (res) {
           resolve(user);
         } else {
@@ -233,7 +236,7 @@ UserSchema.pre('save', function (next) {
   var user = this;
 
   if (user.isModified('password')) {
-    bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.genSalt(9, (err, salt) => {
       bcrypt.hash(user.password, salt, (err, hash) => {
         user.password = hash;
         next();
@@ -251,7 +254,7 @@ UserSchema.pre('save', function (next) {
 //   console.log(user.getUpdate());
 //   if (user.getUpdate().password != null){
 //     try {
-//       bcrypt.genSalt(10, (err, salt) => {
+//       bcrypt.genSalt(9, (err, salt) => {
 //         // console.log("password is here...");
 //         // console.log(this.getUpdate());
 //         bcrypt.hash(user.getUpdate().$set.password, salt, (err, hash) => {
