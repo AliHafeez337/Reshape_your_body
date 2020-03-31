@@ -5,7 +5,7 @@ const _ = require('lodash');
 const phone = require('phone');
 const bcrypt = require('bcryptjs');
 
-const {secret} = require('../config/config');
+const {secret, address} = require('../config/config');
 const {mongoose} = require('../db/mongoose');
 
 var UserSchema = new mongoose.Schema({
@@ -22,6 +22,10 @@ var UserSchema = new mongoose.Schema({
     type: String,
     required: false,
     default: ''
+  },
+  photo: {
+    type: String,
+    required: false
   },
   usertype: {
     type: String,
@@ -114,8 +118,7 @@ var UserSchema = new mongoose.Schema({
 UserSchema.methods.toJSON = function () {
   var user = this;
   var userObject = user.toObject();
-
-  return _.pick(userObject, 
+  var picked = _.pick(userObject, 
     ['_id', 
     'usertype',
     'email',
@@ -128,7 +131,13 @@ UserSchema.methods.toJSON = function () {
     'city',
     'postal',
     'country',
+    'photo'
   ]);
+  if (picked.photo.slice(0,4) !== "http"){
+    picked.photo = address + picked.photo
+  }
+
+  return picked;
 };
 
 UserSchema.methods.generateAuthToken = function () {

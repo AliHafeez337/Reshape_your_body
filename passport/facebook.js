@@ -34,8 +34,8 @@ passport.use(
         // console.log(accessToken);
         // console.log(`refresh token is`);
         // console.log(refreshToken);
-        console.log(`profile is`);
-        console.log(profile);
+        // console.log(`profile is`);
+        // console.log(profile);
       // const { email, first_name, last_name } = profile._json;
       // const userData = {
       //   email,

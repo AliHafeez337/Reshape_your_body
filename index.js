@@ -134,16 +134,14 @@ app.get('/:file', function (req, res) {
           root: __dirname
         });
   }
-  else{
+  else if (req.params.file=='broadcast'){
     res.sendFile('websocket.html', {
           root: __dirname
         }); 
   }
-  // req.params.file == 'register' ?
-  //   res.sendFile('register.html', {
-  //     root: __dirname
-  //   }) :
-  //   res.sendFile('login.html', {
-  //     root: __dirname
-  //   });
+  else{
+    res.sendFile('uploads/'+req.params.file, {
+          root: __dirname
+        }); 
+  }
 });

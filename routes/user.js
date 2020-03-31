@@ -7,6 +7,7 @@ var nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const jwt_decode = require('jwt-decode');
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
  
 var {User} = require('../models/user');
 var {authenticate} = require('../middleware/authenticate');
@@ -24,18 +25,46 @@ var transporter = nodemailer.createTransport({
        }
 });
 
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, './uploads/');
+    },
+    filename: function(req, file, cb) {
+        cb(null, Date.now()+ '_' + file.originalname);
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png'){
+        cb(null, true);
+    }
+    else{
+        cb(null, false);
+    }
+}
+
+const upload = multer({
+    storage,
+    limits: {
+        fileSize: 1024 * 1024 * 5
+    },
+    fileFilter
+});
+
 router.post('/login', 
     passport.authenticate('local', 
     { failureRedirect: '/user/fail' }),
     async function(req, res) {
-        // console.log(req.user)
+        console.log('user is here...');
+        console.log(req.user)
         if (req.user.verification == ""){
             const token = await req.user.generateAuthToken();
             // var decoded = jwt_decode(token);
             
             var body1 = {
-                userid: req.user._id,
+                _id: req.user._id,
                 email: req.user.email,
+                photo: req.user.photo,
                 token: token,
                 // tokenexp: decoded.exp
             }
@@ -50,7 +79,7 @@ router.post('/login',
     }
 );
 
-router.post('/register', async (req, res) => {
+router.post('/register', upload.single('photo'), async (req, res) => {
     // 2 ways to generate confirmation link
     // generate a token with email, secret and expire time...
     // or
@@ -58,6 +87,7 @@ router.post('/register', async (req, res) => {
     // I think it is more good because you can generate again
     // while in case of token, it will remain the same if not for the expire time
 
+    // console.log(req.file);
     console.log('reached')
     try {
         var body = _.pick(req.body, [
@@ -73,6 +103,8 @@ router.post('/register', async (req, res) => {
             'country',
             'password'
         ]);
+        body.photo = req.file.path.slice(8);
+
         const doc1 = await User.findByEmail(body.email);
         console.log(doc1);
         if (doc1 != null && doc1.verification != ""){
@@ -262,6 +294,33 @@ router.post('/logout', authenticate, async (req, res) => {
     }
 });
 
+router.get('/me', authenticate, async (req, res) => {
+    res.send(req.person);
+});
+
+router.delete('/delete', authenticate, async (req, res) => {
+//   console.log(req.person);
+    try {
+      if (req.person.usertype == 'admin'){
+        var body = _.pick(req.body, [
+            'id',
+        ]);
+        var doc = await User.findByIdAndDelete(body.id);
+        // console.log(doc);
+        res.send(doc);
+      }
+      else{
+        var doc = await User.findByIdAndDelete(req.person._id);
+        // console.log(doc);
+        res.send(doc);
+      }
+    } catch (e) {
+      res.status(400).send({
+          "errmsg": "Something went wrong in the whole process..."
+      });
+    }
+});
+
 router.post('/forget', async (req, res) => {
     var body = _.pick(req.body, [
         'email',
@@ -339,58 +398,98 @@ var genHash = async (password) => {
     });
 }
 
-router.patch('/edit', authenticate, async (req, res) => {
+router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => {
     
-    var body = _.pick(req.body, [
-        'usertype',
-        'firstname',
-        'lastname',
-        'birthdate',
-        'phone',
-        'address1',
-        'address2',
-        'city',
-        'postal',
-        'country',
-        'password'
-    ]);
-
-    if (body.password != undefined && body.password != ''){
-      if (body.password.length < 6){
-        res.status(406).send({
-          errmsg: "Password length can not be less than 6."
-        })
-      }
-      else{
-        body.password = await genHash(body.password);
-        console.log(body);
-        var doc = await User.findByIdAndUpdate(
-            {_id:  req.person._id}, body, {new: true}
-            );
-        console.log(doc);
-        if (doc == null){
-          res.status(400).send({
-            errmsg: "Document to be updated not found."
-          })
+    try {
+        console.log(req.person.usertype);
+        if (req.person.usertype == 'admin'){
+            var body = _.pick(req.body, [
+                'id', // of doc to be edited by admin
+                'usertype',
+                'firstname',
+                'lastname',
+                'birthdate',
+                'phone',
+                'address1',
+                'address2',
+                'city',
+                'postal',
+                'country'
+            ]);
+            body.photo = req.file.path.slice(8);
+        
+            var doc = await User.findByIdAndUpdate(
+                {_id:  body.id}, body, {new: true}
+                );
+            console.log(doc);
+            if (doc == null){
+                res.status(400).send({
+                    errmsg: "Document to be updated not found."
+                })
+            }
+            else{
+                res.status(200).send(doc);
+            }
         }
         else{
-          res.send(doc);
+            console.log("else");
+            var body = _.pick(req.body, [
+                'firstname',
+                'lastname',
+                'birthdate',
+                'phone',
+                'address1',
+                'address2',
+                'city',
+                'postal',
+                'country',
+                'password'
+            ]);
+            body.photo = req.file.path.slice(8);
+        
+            if (body.password != undefined && body.password != ''){
+              if (body.password.length < 6){
+                res.status(400).send({
+                  errmsg: "Password length can not be less than 6."
+                })
+              }
+              else{
+                body.password = await genHash(body.password);
+                console.log("body");
+                console.log(body);
+                var doc = await User.findByIdAndUpdate(
+                    {_id:  req.person._id}, body, {new: true}
+                    );
+                console.log(doc);
+                if (doc == null){
+                  res.status(400).send({
+                    errmsg: "Document to be updated not found."
+                  })
+                }
+                else{
+                  res.status(200).send(doc);
+                }
+              }
+            }
+            else{
+              var doc = await User.findByIdAndUpdate(
+                  {_id:  req.person._id}, body, {new: true}
+                  );
+              console.log(doc);
+              if (doc == null){
+                res.status(400).send({
+                  errmsg: "Document to be updated not found."
+                })
+              }
+              else{
+                res.status(200).send(doc);
+              }
+            }
         }
-      }
-    }
-    else{
-      var doc = await User.findByIdAndUpdate(
-          {_id:  req.person._id}, body, {new: true}
-          );
-      console.log(doc);
-      if (doc == null){
+    } catch (e) {
         res.status(400).send({
-          errmsg: "Document to be updated not found."
-        })
-      }
-      else{
-        res.send(doc);
-      }
+            "errmsg": "Something went wrong in the whole process..."
+        });
     }
 });
 
@@ -572,16 +671,20 @@ router.get(
     passport.authenticate("facebook", 
     { failureRedirect: '/user/fail' }),
     async function(req, res) {
-        // console.log(req.user._json);
         // const doc = await User.findOne({'email':req.user._json.email});
         const doc = await User.findByEmail(req.user._json.email);
         // console.log(doc);
+        // console.log('profile is here.');
+        // console.log(req.user._json);
         if (doc == null){
+            // console.log('picture is here.');
+            // console.log(req.user._json.picture);
             var user = new User({
                 'email': req.user._json.email,
                 'lastname': req.user._json.last_name,
                 'firstname': req.user._json.first_name,
-                'verification': ''
+                'verification': '',
+                'photo': `http://graph.facebook.com/${req.user._json.id}/picture?type=large&redirect=true&width=500&height=500`
             });
             // console.log(user);
             
@@ -633,7 +736,9 @@ router.get(
     passport.authenticate("google", 
     { failureRedirect: '/user/fail' }),
     async function(req, res) {
-        console.log(req.user._json.email);
+        // console.log('profile is here.');
+        // console.log(req.user._json);
+        // console.log(req.user._json.email);
         if(req.user._json.email_verified){
             const doc = await User.findByEmail(req.user._json.email);
             // console.log(doc);
@@ -642,7 +747,8 @@ router.get(
                     'email': req.user._json.email,
                     'firstname': req.user._json.given_name,
                     'lastname':req.user._json.family_name,
-                    'verification': ''
+                    'verification': '',
+                    'photo': req.user._json.picture
                 });
                 // console.log(user);
                 

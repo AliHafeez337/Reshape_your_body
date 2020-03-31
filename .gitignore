@@ -105,3 +105,6 @@ dist
 
 # Testing directory
 _playground/
+
+# Upload directory
+uploads/
