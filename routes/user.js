@@ -10,7 +10,7 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
  
 var {User} = require('../models/user');
-var {authenticate} = require('../middleware/authenticate');
+var {authenticate, adminauthenticate} = require('../middleware/authenticate');
 const {
     email, 
     password,
@@ -103,12 +103,16 @@ router.post('/register', upload.single('photo'), async (req, res) => {
             'country',
             'password'
         ]);
-        body.photo = req.file.path.slice(8);
+        if (req.file != null){
+            body.photo = req.file.path.slice(8);
+        }
 
         const doc1 = await User.findByEmail(body.email);
         console.log(doc1);
         if (doc1 != null && doc1.verification != ""){
-            // resend him the confirmation email...
+            // this means that he forgot that he already registered some time ago but didn't confirmed email
+            // resend him the confirmation email again...
+
             var randomstring = cryptoRandomString({length: 1000, type: 'url-safe'});
             
             var body = {
@@ -193,6 +197,8 @@ router.post('/register', upload.single('photo'), async (req, res) => {
             })
         }
         else{
+            // a new commer...
+
             var randomstring = cryptoRandomString({length: 1000, type: 'url-safe'});
             body.verification = randomstring;
             var user = new User(body);
@@ -290,12 +296,19 @@ router.post('/logout', authenticate, async (req, res) => {
         })
       }
     } catch (e) {
-      res.status(400).send(e);
+      res.status(400).send({
+          "errmsg": "Something went wrong in the whole process..."
+      });
     }
 });
 
 router.get('/me', authenticate, async (req, res) => {
-    res.send(req.person);
+    res.status(200).send(req.person);
+});
+
+router.get('/all', adminauthenticate, async (req, res) => {
+    var doc = await User.find();
+    res.status(200).send(doc);
 });
 
 router.delete('/delete', authenticate, async (req, res) => {
@@ -384,7 +397,7 @@ router.post('/forget', async (req, res) => {
 var genHash = async (password) => {
     return new Promise(async (resolve, reject) => {
         try {
-            bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.genSalt(9, (err, salt) => {
                 bcrypt.hash(password, salt, (err, hash) => {
                     // console.log(hash);
                     // console.log('hhashhhhhh');
@@ -397,6 +410,183 @@ var genHash = async (password) => {
         }
     });
 }
+
+router.post('/adminregister', adminauthenticate, upload.single('photo'), async (req, res) => {
+
+    console.log('admin registers')
+    try {
+        var body = _.pick(req.body, [
+            'email',
+            'usertype',
+            'firstname',
+            'lastname',
+            'birthdate',
+            'phone',
+            'address1',
+            'address2',
+            'city',
+            'postal',
+            'country'
+        ]);
+        if (req.file != null){
+            body.photo = req.file.path.slice(8);
+        }
+
+        const doc1 = await User.findByEmail(body.email);
+        // console.log(doc1);
+        if (doc1 != null && doc1.verification != ""){
+            // this means that he forgot that he already registered some time ago but didn't confirmed email
+            // resend him the confirmation email again...
+
+            var password = cryptoRandomString({length: 6, type: 'base64'});
+            var randomstring = cryptoRandomString({length: 1000, type: 'url-safe'});
+            
+            var body1 = {
+                'verification': randomstring
+            }
+            // body1.password = await genHash(password);
+            genHash(password).then(async (hash) => {
+                body1.password = hash;
+
+                var doc2 = await User.findOneAndUpdate({
+                    _id: doc1.id
+                  }, 
+                  body1, 
+                  {new: true});
+                // console.log(doc2);
+    
+                var mailBody = `
+                <div style="
+                    background-color:#fafafa;
+                    padding-left: 20px;"><br />
+                    <h1>Hi, ${doc1.firstname}&nbsp;${doc1.lastname}</h1>
+                    <h3>Your new password is: ${password}</h3>
+                    <h5>Please confirm your email by clicking the button below</h5>
+                    <a 
+                        href="http://localhost:3000/user/${randomstring}/email/${doc1.email}"
+                        style="color: white;
+                        text-decoration: none;">
+                        <button style="
+                        background-color:#4CAF50;
+                        border: none;
+                        color: white;
+                        padding: 16px 32px;
+                        text-align: center;
+                        text-decoration: none;
+                        display: inline-block;
+                        font-size: 16px;
+                        margin: 4px 2px;
+                        transition-duration: 0.4s;
+                        cursor: pointer;
+                        border-radius: 10px;"
+                    >Welcome...
+                    </button></a><br />
+                </div>
+                `;
+    
+                const mailOptions = {
+                    from: '"CodeCrafterz 👻" <codecrafterz@gmail.com>', // sender address
+                    to: body.email, // list of receivers
+                    subject: 'Invitation to join our community', // Subject line
+                    html: mailBody
+                };
+                transporter.sendMail(mailOptions, function (err, info) {
+                    if(err){
+                        console.log(err);
+                        res.status(400).send({
+                            errmsg: "Couldn't send the invitation email..."
+                        });
+                    }
+                    else{
+                        console.log(info);
+                        res.status(200).send({
+                            errmsg: "This email was already registered by not verified but we have send the invitation again... but we can not modify the the user data without his/her consent."
+                        });
+                    }
+                });
+            }).catch((e) => {
+                console.log(e);
+                res.status(400).send({
+                    errmsg: "Couldn't generate the hash."
+                })
+            });
+        }
+        else if (doc1 != null && doc1.verification == ""){
+            res.status(400).send({
+                "errmsg": "This email is already registered..."
+            });
+        }
+        else{
+            // a new commer...
+     
+            var password = cryptoRandomString({length: 6, type: 'base64'});
+            var randomstring = cryptoRandomString({length: 1000, type: 'url-safe'});
+            
+            body.verification = randomstring;
+            body.password = password;
+
+            var noway = new User(body);
+            console.log(noway);
+
+            var doc2 = await noway.save();
+            console.log(doc2);
+            
+            var mailBody = `
+            <div style="
+                background-color:#fafafa;
+                padding-left: 20px;"><br />
+                <h1>Hi, ${body.firstname}&nbsp;${body.lastname}</h1>
+                <h3>Your new password is: ${password}</h3>
+                <h5>Please confirm your email by clicking the button below</h5>
+                <a 
+                    href="http://localhost:3000/user/${randomstring}/email/${body.email}"
+                    style="color: white;
+                    text-decoration: none;">
+                    <button style="
+                    background-color:#4CAF50;
+                    border: none;
+                    color: white;
+                    padding: 16px 32px;
+                    text-align: center;
+                    text-decoration: none;
+                    display: inline-block;
+                    font-size: 16px;
+                    margin: 4px 2px;
+                    transition-duration: 0.4s;
+                    cursor: pointer;
+                    border-radius: 10px;"
+                >Welcome...
+                </button></a><br />
+            </div>
+            `;
+
+            const mailOptions = {
+                from: '"CodeCrafterz 👻" <codecrafterz@gmail.com>', // sender address
+                to: noway.email, // list of receivers
+                subject: 'Confirm Your Email', // Subject line
+                html: mailBody
+            };
+            transporter.sendMail(mailOptions, function (err, info) {
+                if(err){
+                    console.log(err);
+                    res.status(200).send({
+                        "msg": "Unable to send email..."
+                    });
+                }
+                else{
+                    console.log(info);
+                    res.status(200).send({
+                        "msg": "Done, the user just needs to confirm the email..."
+                    });
+                }
+            });
+        }
+    } catch (e) {
+        res.status(400).send({
+            "errmsg": "Something went wrong in the whole process..."
+        });
+    }
+});
 
 router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => {
     
@@ -416,7 +606,9 @@ router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => 
                 'postal',
                 'country'
             ]);
-            body.photo = req.file.path.slice(8);
+            if (req.file != null){
+                body.photo = req.file.path.slice(8);
+            }
         
             var doc = await User.findByIdAndUpdate(
                 {_id:  body.id}, body, {new: true}
@@ -445,7 +637,9 @@ router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => 
                 'country',
                 'password'
             ]);
-            body.photo = req.file.path.slice(8);
+            if (req.file != null){
+                body.photo = req.file.path.slice(8);
+            }
         
             if (body.password != undefined && body.password != ''){
               if (body.password.length < 6){
@@ -454,21 +648,29 @@ router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => 
                 })
               }
               else{
-                body.password = await genHash(body.password);
-                console.log("body");
-                console.log(body);
-                var doc = await User.findByIdAndUpdate(
-                    {_id:  req.person._id}, body, {new: true}
-                    );
-                console.log(doc);
-                if (doc == null){
-                  res.status(400).send({
-                    errmsg: "Document to be updated not found."
-                  })
-                }
-                else{
-                  res.status(200).send(doc);
-                }
+                // body.password = await genHash(body.password);
+                genHash(body.password).then(async (hash) => {
+                    body.password = hash;
+
+                    console.log("body");
+                    console.log(body);
+                    var doc = await User.findByIdAndUpdate(
+                        {_id:  req.person._id}, body, {new: true}
+                        );
+                    console.log(doc);
+                    if (doc == null){
+                      res.status(400).send({
+                        errmsg: "Document to be updated not found."
+                      })
+                    }
+                    else{
+                      res.status(200).send(doc);
+                    }
+                }).catch((e) => {
+                    res.status(400).send({
+                        "errmsg": "Sorry, couldn't generate hash..."
+                    })
+                });
               }
             }
             else{
@@ -979,7 +1181,9 @@ router.get('/:reg/email/:em', async (req, res) => {
               {new: true});
             // console.log(doc1);
             if (doc1.verification == ""){
-                res.status(200).send(doc1);
+                res.status(200).send({
+                    "msg": "Email verified, now go to login page..."
+                });
             }
             else{
                 res.status(401).send({
