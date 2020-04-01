@@ -1,3 +1,4 @@
+// Package imports...
 var express = require('express');
 var router = express.Router();
 const passport = require('passport');
@@ -9,14 +10,17 @@ const jwt_decode = require('jwt-decode');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
  
+// Local imports...
 var {User} = require('../models/user');
 var {authenticate, adminauthenticate} = require('../middleware/authenticate');
 const {
     email, 
     password,
-    forgetSecret
+    forgetSecret, 
+    address
   } = require('../config/config');
 
+// Email sending setup
 var transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -25,6 +29,7 @@ var transporter = nodemailer.createTransport({
        }
 });
 
+// Storage configuration...
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
         cb(null, './uploads/');
@@ -34,6 +39,7 @@ const storage = multer.diskStorage({
     }
 });
 
+// File filter for photos...
 const fileFilter = (req, file, cb) => {
     if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png'){
         cb(null, true);
@@ -51,6 +57,7 @@ const upload = multer({
     fileFilter
 });
 
+// Login with local strategy...
 router.post('/login', 
     passport.authenticate('local', 
     { failureRedirect: '/user/fail' }),
@@ -68,6 +75,10 @@ router.post('/login',
                 token: token,
                 // tokenexp: decoded.exp
             }
+            
+            if (body1.photo.slice(0,4) !== "http"){
+                body1.photo = address + body1.photo
+            }
             // console.log(body1);
             res.send(body1);
         }
@@ -79,6 +90,7 @@ router.post('/login',
     }
 );
 
+// Just register myself... everyone registers himslef...
 router.post('/register', upload.single('photo'), async (req, res) => {
     // 2 ways to generate confirmation link
     // generate a token with email, secret and expire time...
@@ -281,6 +293,7 @@ router.post('/register', upload.single('photo'), async (req, res) => {
     }
 });
 
+// Just logout
 router.post('/logout', authenticate, async (req, res) => {
     try {
     //   const user = await User.findByToken(req.token);
@@ -302,15 +315,19 @@ router.post('/logout', authenticate, async (req, res) => {
     }
 });
 
+// Who Am I?
 router.get('/me', authenticate, async (req, res) => {
     res.status(200).send(req.person);
 });
 
+// Admin can view all users list...
 router.get('/all', adminauthenticate, async (req, res) => {
     var doc = await User.find();
     res.status(200).send(doc);
 });
 
+// Delete a user...
+// All can delete themseleves only while admin can delete anyone...
 router.delete('/delete', authenticate, async (req, res) => {
 //   console.log(req.person);
     try {
@@ -334,6 +351,7 @@ router.delete('/delete', authenticate, async (req, res) => {
     }
 });
 
+// First call of "Forget Password"... will send a code to the email...
 router.post('/forget', async (req, res) => {
     var body = _.pick(req.body, [
         'email',
@@ -394,6 +412,7 @@ router.post('/forget', async (req, res) => {
     }
 });
 
+// A hash generator promise for password...
 var genHash = async (password) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -411,6 +430,7 @@ var genHash = async (password) => {
     });
 }
 
+// Admin registers someone... can provide full detail if he likes... without password obviously...
 router.post('/adminregister', adminauthenticate, upload.single('photo'), async (req, res) => {
 
     console.log('admin registers')
@@ -588,6 +608,8 @@ router.post('/adminregister', adminauthenticate, upload.single('photo'), async (
     }
 });
 
+// Edit a user...
+// Admin can edit someone witout password, All can edit themselves fully except their email...
 router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => {
     
     try {
@@ -606,21 +628,47 @@ router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => 
                 'postal',
                 'country'
             ]);
+            
             if (req.file != null){
                 body.photo = req.file.path.slice(8);
             }
-        
-            var doc = await User.findByIdAndUpdate(
-                {_id:  body.id}, body, {new: true}
-                );
-            console.log(doc);
-            if (doc == null){
-                res.status(400).send({
-                    errmsg: "Document to be updated not found."
-                })
+
+            if (body.id == req.person._id){
+                body.password = _.pick(req.body, ['password']).password;
+                genHash(body.password).then(async (hash) => {
+                    body.password = hash;
+                    // console.log(hash)
+                    var doc = await User.findByIdAndUpdate(
+                        {_id:  body.id}, body, {new: true}
+                        );
+                    console.log(doc);
+                    if (doc == null){
+                        res.status(400).send({
+                            errmsg: "Document to be updated not found."
+                        })
+                    }
+                    else{
+                        res.status(200).send(doc);
+                    }
+                }).catch((e) => {
+                    res.status(400).send({
+                        "errmsg": "Sorry, couldn't generate hash..."
+                    })
+                });
             }
             else{
-                res.status(200).send(doc);
+                var doc = await User.findByIdAndUpdate(
+                    {_id:  body.id}, body, {new: true}
+                    );
+                console.log(doc);
+                if (doc == null){
+                    res.status(400).send({
+                        errmsg: "Document to be updated not found."
+                    })
+                }
+                else{
+                    res.status(200).send(doc);
+                }
             }
         }
         else{
@@ -695,6 +743,7 @@ router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => 
     }
 });
 
+// Edit your email... will go a confirmation email from this route...
 router.patch('/editEmail', authenticate, async (req, res) => {
     var body = _.pick(req.body, [
         'email',
@@ -781,6 +830,7 @@ router.patch('/editEmail', authenticate, async (req, res) => {
     }
 });
 
+// Like a callback from forget password...
 router.patch("/reset", async (req, res) => {
     var body = _.pick(req.body, [
         'code', "email", "password"
@@ -852,6 +902,7 @@ router.patch("/reset", async (req, res) => {
 
 });
 
+// Call to facebook...
 router.get("/auth/facebook", 
     passport.authenticate("facebook", 
         { scope : [
@@ -868,6 +919,7 @@ router.get("/auth/facebook",
     )
 );
 
+// Return from facebook...
 router.get(
     "/auth/facebook/callback",
     passport.authenticate("facebook", 
@@ -925,6 +977,7 @@ router.get(
     }
 );
 
+// Call to google...
 router.get('/auth/google',
   passport.authenticate('google', { 
     scope: ['https://www.googleapis.com/auth/plus.login',
@@ -933,6 +986,7 @@ router.get('/auth/google',
     ]})
 );
 
+// Return from google...
 router.get(
     '/auth/google/callback',
     passport.authenticate("google", 
@@ -989,12 +1043,14 @@ router.get(
     }
 );
 
+// Just a fail message...
 router.get("/fail", (req, res) => {
   res.status(401).send({
       "errmsg": "Failed login attempt...!"
   });
 });
 
+// Requesting a new code...
 router.get('/email/:em', async (req, res) => {
     var email = req.params.em;
     const doc = await User.findByEmail(email);
@@ -1093,6 +1149,7 @@ router.get('/email/:em', async (req, res) => {
     }
 });
 
+// change the email...
 router.get('/change/:str/email/:email/toBe/:toBe', authenticate, async (req, res) => {
     var str = req.params.str;
     var email = req.params.email;
@@ -1116,7 +1173,8 @@ router.get('/change/:str/email/:email/toBe/:toBe', authenticate, async (req, res
                             _id: doc.id
                             }, 
                             {
-                                email: decoded.email
+                                email: decoded.email,
+                                emailToBe: ''
                             }, 
                             {new: true});
                         // console.log(doc1);
@@ -1161,6 +1219,7 @@ router.get('/change/:str/email/:email/toBe/:toBe', authenticate, async (req, res
     }
 });
 
+//confirm the registration for new commer...
 router.get('/:reg/email/:em', async (req, res) => {
     var str = req.params.reg;
     var email = req.params.em;
