@@ -29,8 +29,10 @@ router.post("/newRequest", usercustomerauthenticate, async (req, res) => {
   console.log(body.madeBy);
 
   check_duplicate = await (await Requests.find({ madeBy: body.madeBy })).length;
-  if (check_duplicate >= 50) {
-    res.status(200).send("You have already requested");
+  if (check_duplicate >= 1) {
+    res.status(200).send({
+      "errmsg": "You have already requested."
+    });
   } else {
     try {
       var doc1 = await newrequest.save();
@@ -58,7 +60,7 @@ router.post("/newRequest", usercustomerauthenticate, async (req, res) => {
                         transition-duration: 0.4s;
                         cursor: pointer;
                         border-radius: 10px;"
-                    >Welcome...
+                    >View the request
                     </button></a><br />
                    
                 </div>
@@ -74,7 +76,7 @@ router.post("/newRequest", usercustomerauthenticate, async (req, res) => {
       const mailOptions = {
         from: '"CodeCrafterz 👻"<codecrafterz@gmail.com>', // sender address
         to: to, // list of receivers
-        subject: "Confirm Your Email", // Subject line
+        subject: "You've got a new request", // Subject line
         html: mailBody
       };
       transporter.sendMail(mailOptions, function(err, info) {
@@ -148,7 +150,7 @@ router.put("/updateRequestStatus", adminauthenticate, async (req, res) => {
     const mailOptions = {
       from: '"CodeCrafterz 👻"<codecrafterz@gmail.com>', // sender address
       to: user.email, // list of receivers
-      subject: "Confirm Your Email", // Subject line
+      subject: "Your request status is updated.", // Subject line
       html: mailBody
     };
     transporter.sendMail(mailOptions, function(err, info) {
@@ -199,6 +201,7 @@ router.put("/updateRequestStatus", adminauthenticate, async (req, res) => {
 //             });
 //         }
 //     });
+
 router.delete("/delete", adminauthenticate, async (req, res) => {
   try {
     var delet_user = await Requests.findByIdAndDelete(req.query.reqId);
@@ -210,6 +213,7 @@ router.delete("/delete", adminauthenticate, async (req, res) => {
     });
   }
 });
+
 router.delete("/deleteMyRequest",usercustomerauthenticate,async (req, res) =>
  {
     try {
@@ -226,6 +230,7 @@ router.delete("/deleteMyRequest",usercustomerauthenticate,async (req, res) =>
     }
   }
 );
+
 router.get("/:id", authenticate, async (req, res) => {
   console.log("get id: " + req.params.id);
 
@@ -240,4 +245,5 @@ router.get("/:id", authenticate, async (req, res) => {
     });
   }
 });
+
 module.exports = router;
