@@ -72,6 +72,8 @@ router.post('/login',
                 _id: req.user._id,
                 email: req.user.email,
                 photo: req.user.photo,
+                firstname: req.user.firstname,
+                lastname: req.user.lastname,
                 token: token,
                 // tokenexp: decoded.exp
             }
@@ -938,7 +940,8 @@ router.get(
                 'lastname': req.user._json.last_name,
                 'firstname': req.user._json.first_name,
                 'verification': '',
-                'photo': `http://graph.facebook.com/${req.user._json.id}/picture?type=large&redirect=true&width=500&height=500`
+                // 'photo': `http://graph.facebook.com/${req.user._json.id}/picture?type=large&redirect=true&width=500&height=500`
+                'photo': req.user._json.picture
             });
             // console.log(user);
             
