@@ -38,25 +38,7 @@ var FaqSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now()
-    },
-    discussion: [{
-        reply: {
-            type: String
-        },
-        by: {
-            type: ObjectId,
-            ref: 'users'
-        },
-        createdAt: {
-            type: Date,
-            default: Date.now()
-        },
-        clikes: {
-            type: Number,
-            default: 0
-        },
-        required: false
-    }]
+    }
 });
 
 FaqSchema.methods.toJSON = function () {
@@ -70,8 +52,7 @@ FaqSchema.methods.toJSON = function () {
             'askedBy',
             'likes',
             'status',
-            'createdAt',
-            'discussion'
+            'createdAt'
         ]);
 };
 
