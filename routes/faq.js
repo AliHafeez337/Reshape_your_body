@@ -20,6 +20,7 @@ router.post('/addQuestion', adminpartnerauthenticate, async function (req, res) 
         var body = {
             category: req.body.category,
             question: req.body.question,
+            answer: req.body.answer,
             askedBy: req.person
         }
         var faqM = new Faq(body);
@@ -95,11 +96,13 @@ router.put('/faqLike', adminpartnerauthenticate, async function (req, res) {
 // });
 
 // 5
-router.put('/updateStatus', adminauthenticate, async function (req, res) {
+router.put('/updateFaq', adminauthenticate, async function (req, res) {
     try {
         var doc1 = await Faq.findByIdAndUpdate(
             req.query.faqId, {
-                status: req.body.status
+                question: req.body.question,
+                answer: req.body.answer,
+                category: req.body.answer
             }, {
                 new: true
             }
@@ -164,7 +167,7 @@ router.delete('/deleteQuestionByOwner', adminpartnerauthenticate, async function
 // 8
 router.get('/getFaqs', adminpartnerauthenticate, async function (req, res) {
     try {
-        var doc1 = await Faq.find({});
+        var doc1 = await Faq.find({}).populate('askedBy');
         res.status(200).send(doc1);
     } catch (e) {
         res.status(400).send({
@@ -179,7 +182,7 @@ router.get('/getFaqByCatogory', adminpartnerauthenticate, async function (req, r
     try {
         var doc1 = await Faq.find({
             category: req.body.category
-        });
+        }).populate('askedBy');
         res.status(200).send(doc1);
     } catch (e) {
         res.status(400).send({
@@ -192,7 +195,7 @@ router.get('/getFaqByCatogory', adminpartnerauthenticate, async function (req, r
 // 10
 router.get('/geFaqById', adminpartnerauthenticate, async function (req, res) {
     try {
-        var doc1 = await Faq.findById(req.query.FaqId);
+        var doc1 = await Faq.findById(req.query.FaqId).populate('askedBy');
         res.status(200).send(doc1);
     } catch (e) {
         res.status(400).send({
@@ -207,7 +210,7 @@ router.get('/getFaqByOwner', adminpartnerauthenticate, async function (req, res)
     try {
         var doc1 = await Faq.find({
             askedBy: req.person
-        });
+        }).populate('askedBy');
         res.status(200).send(doc1);
     } catch (e) {
         res.status(400).send({

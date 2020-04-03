@@ -18,7 +18,7 @@ var KeySchema = new mongoose.Schema({
     },
     owner: {
         type: ObjectId,
-        ref: 'users',
+        ref: 'User',
         default: null,
         required: false
     },
