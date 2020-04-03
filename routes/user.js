@@ -75,6 +75,7 @@ router.post('/login',
                 firstname: req.user.firstname,
                 lastname: req.user.lastname,
                 token: token,
+                usertype: req.user.usertype
                 // tokenexp: decoded.exp
             }
             
