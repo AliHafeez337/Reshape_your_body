@@ -32,31 +32,31 @@ router.post('/addQuestion', adminpartnerauthenticate, async function (req, res) 
     }
 });
 // 2
-router.put('/addComment', adminpartnerauthenticate, async function (req, res) {
-    try {
-        var body = {
-            reply: req.body.reply,
-            by: req.person,
-            createdAt: Date.now(),
-            likes: 0
-        }
-        var doc1 = await Faq.findByIdAndUpdate(
-            req.query.faqId, {
-                $push: {
-                    discussion: body
-                }
-            }, {
-                new: true
-            }
-        );
-        res.send(doc1);
-    } catch (e) {
-        console.log(e);
-        res.status(400).send({
-            errmsg: "Somethin bad happened"
-        });
-    }
-});
+// router.put('/addComment', adminpartnerauthenticate, async function (req, res) {
+//     try {
+//         var body = {
+//             reply: req.body.reply,
+//             by: req.person,
+//             createdAt: Date.now(),
+//             likes: 0
+//         }
+//         var doc1 = await Faq.findByIdAndUpdate(
+//             req.query.faqId, {
+//                 $push: {
+//                     discussion: body
+//                 }
+//             }, {
+//                 new: true
+//             }
+//         );
+//         res.send(doc1);
+//     } catch (e) {
+//         console.log(e);
+//         res.status(400).send({
+//             errmsg: "Somethin bad happened"
+//         });
+//     }
+// });
 // 3
 router.put('/faqLike', adminpartnerauthenticate, async function (req, res) {
     try {
@@ -77,22 +77,22 @@ router.put('/faqLike', adminpartnerauthenticate, async function (req, res) {
     }
 });
 // 4
-router.put('/commentLike', adminpartnerauthenticate, async function (req, res) {
-    try {
-        var doc1 = await Faq.findOneAndUpdate({
-            'discussion._id': req.query.replyId
-        }, {
-            $inc: {
-                'discussion.$.clikes': 1
-            }
-        });
-        res.send(doc1);
-    } catch {
-        res.status(400).send({
-            errmsg: "Somethin bad happened"
-        });
-    }
-});
+// router.put('/commentLike', adminpartnerauthenticate, async function (req, res) {
+//     try {
+//         var doc1 = await Faq.findOneAndUpdate({
+//             'discussion._id': req.query.replyId
+//         }, {
+//             $inc: {
+//                 'discussion.$.clikes': 1
+//             }
+//         });
+//         res.send(doc1);
+//     } catch {
+//         res.status(400).send({
+//             errmsg: "Somethin bad happened"
+//         });
+//     }
+// });
 
 // 5
 router.put('/updateStatus', adminauthenticate, async function (req, res) {
@@ -140,26 +140,26 @@ router.delete('/deleteQuestionByOwner', adminpartnerauthenticate, async function
 
 });
 // 7
-router.put('/deleteComment', adminpartnerauthenticate, async function (req, res) {
-    try {
-        var doc1 = await Faq.findByIdAndUpdate(
-            req.query.faqId, {
-                $pull: {
-                    discussion: {
-                        '_id': req.query.replyId
-                    }
-                }
-            }, {
-                new: true
-            }
-        );
-        res.send(doc1);
-    } catch {
-        res.status(400).send({
-            errmsg: "Somethin bad happened"
-        });
-    }
-});
+// router.put('/deleteComment', adminpartnerauthenticate, async function (req, res) {
+//     try {
+//         var doc1 = await Faq.findByIdAndUpdate(
+//             req.query.faqId, {
+//                 $pull: {
+//                     discussion: {
+//                         '_id': req.query.replyId
+//                     }
+//                 }
+//             }, {
+//                 new: true
+//             }
+//         );
+//         res.send(doc1);
+//     } catch {
+//         res.status(400).send({
+//             errmsg: "Somethin bad happened"
+//         });
+//     }
+// });
 
 // 8
 router.get('/getFaqs', adminpartnerauthenticate, async function (req, res) {
