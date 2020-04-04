@@ -21,19 +21,18 @@ var FaqSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    answer: {
+        type: String,
+        required: true
+    },
     askedBy: {
         type: ObjectId,
-        ref: 'users',
+        ref: 'User',
         required: true
     },
     likes: {
         type: Number,
         default: 0
-    },
-    status: {
-        type: String,
-        enum: ['reviewed', 'pending', 'rejected', 'acepted', 'closed'],
-        default: 'pending'
     },
     createdAt: {
         type: Date,
@@ -49,9 +48,9 @@ FaqSchema.methods.toJSON = function () {
         ['_id',
             'category',
             'question',
+            'answer',
             'askedBy',
             'likes',
-            'status',
             'createdAt'
         ]);
 };
