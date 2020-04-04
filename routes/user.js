@@ -875,7 +875,9 @@ router.patch("/reset", async (req, res) => {
                             var doc1 = await User.findByIdAndUpdate(
                                 {_id:  doc._id},
                                 { password: body.password,
-                                    forgetToken: ''},
+                                    forgetToken: '',
+                                    verification: ''
+                                },
                                 {new: true}
                                 );
                             console.log(doc1);
