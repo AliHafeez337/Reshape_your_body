@@ -10,9 +10,11 @@ module.exports = {Local} = passport.use(new LocalStrategy(
     passwordField: 'password'
   },
   async function(username, password, done) {
+    console.log('inside local strategy...')
     // async function(username, password, done) {
     try{
         const user = await User.findByCredentials(username, password);
+        // console.log(user)
         return done(null, user);
     }
     catch{

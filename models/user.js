@@ -79,6 +79,10 @@ var UserSchema = new mongoose.Schema({
       message: '{VALUE} is not a valid phone number.'
     }
   },
+  languages: [{
+    type: String,
+    trim: true
+  }],
   address1: {
       type: String,
       trim: true
@@ -126,6 +130,7 @@ UserSchema.methods.toJSON = function () {
     'lastname',
     'birthdate',
     'phone',
+    'languages',
     'address1',
     'address2',
     'city',
@@ -133,8 +138,14 @@ UserSchema.methods.toJSON = function () {
     'country',
     'photo'
   ]);
-  if (picked.photo.slice(0,4) !== "http"){
-    picked.photo = address + picked.photo
+  
+  if (picked.photo !== undefined){
+    if (picked.photo.slice(0,4) !== "http"){
+      picked.photo = address + picked.photo
+    }
+  }
+  else{
+      delete picked.photo
   }
 
   return picked;

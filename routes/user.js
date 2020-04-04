@@ -63,7 +63,7 @@ router.post('/login',
     { failureRedirect: '/user/fail' }),
     async function(req, res) {
         console.log('user is here...');
-        console.log(req.user)
+        // console.log(req.user)
         if (req.user.verification == ""){
             const token = await req.user.generateAuthToken();
             // var decoded = jwt_decode(token);
@@ -78,9 +78,15 @@ router.post('/login',
                 usertype: req.user.usertype
                 // tokenexp: decoded.exp
             }
+            console.log(body1)
             
-            if (body1.photo.slice(0,4) !== "http"){
-                body1.photo = address + body1.photo
+            if (body1.photo !== undefined){
+                if (body1.photo.slice(0,4) !== "http"){
+                    body1.photo = address + body1.photo
+                }
+            }
+            else{
+                delete body1.photo
             }
             // console.log(body1);
             res.send(body1);
@@ -104,6 +110,7 @@ router.post('/register', upload.single('photo'), async (req, res) => {
 
     // console.log(req.file);
     console.log('reached')
+    
     try {
         var body = _.pick(req.body, [
             'email',
@@ -111,6 +118,7 @@ router.post('/register', upload.single('photo'), async (req, res) => {
             'lastname',
             'birthdate',
             'phone',
+            'languages',
             'address1',
             'address2',
             'city',
@@ -118,6 +126,9 @@ router.post('/register', upload.single('photo'), async (req, res) => {
             'country',
             'password'
         ]);
+        // if (body.languages.length > 0){
+
+        // }
         if (req.file != null){
             body.photo = req.file.path.slice(8);
         }
@@ -214,10 +225,11 @@ router.post('/register', upload.single('photo'), async (req, res) => {
         else{
             // a new commer...
 
+            
             var randomstring = cryptoRandomString({length: 1000, type: 'url-safe'});
             body.verification = randomstring;
             var user = new User(body);
-            // console.log(user);
+            console.log(user);
 
             var mailBody = `
             <div style="
@@ -269,7 +281,7 @@ router.post('/register', upload.single('photo'), async (req, res) => {
             `;
 
             var doc2 = await user.save();
-            // console.log(doc2);
+            console.log(doc2);
             const mailOptions = {
                 from: '"CodeCrafterz 👻" <codecrafterz@gmail.com>', // sender address
                 to: user.email, // list of receivers
@@ -445,6 +457,7 @@ router.post('/adminregister', adminauthenticate, upload.single('photo'), async (
             'lastname',
             'birthdate',
             'phone',
+            'languages',
             'address1',
             'address2',
             'city',
@@ -625,6 +638,7 @@ router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => 
                 'lastname',
                 'birthdate',
                 'phone',
+                'languages',
                 'address1',
                 'address2',
                 'city',
