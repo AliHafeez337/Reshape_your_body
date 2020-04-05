@@ -332,6 +332,7 @@ router.post('/logout', authenticate, async (req, res) => {
 
 // Who Am I?
 router.get('/me', authenticate, async (req, res) => {
+    // console.log(req.person)
     res.status(200).send(req.person);
 });
 
@@ -649,12 +650,60 @@ router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => 
             if (req.file != null){
                 body.photo = req.file.path.slice(8);
             }
-
+            // console.log('req.person._id')
+            // console.log(req.person._id)
             if (body.id == req.person._id){
+                body.oldpassword = _.pick(req.body, ['oldpassword']).oldpassword;
                 body.password = _.pick(req.body, ['password']).password;
-                genHash(body.password).then(async (hash) => {
-                    body.password = hash;
-                    // console.log(hash)
+
+                if (body.oldpassword != undefined && body.oldpassword != '' && body.password != undefined && body.password != ''){
+                    if (body.password.length < 6){
+                        res.status(400).send({
+                        errmsg: "Password length can not be less than 6."
+                        })
+                    }
+                    else{
+                        try{
+                            const user = await User.findByCredentials(req.person.email, body.oldpassword);
+                            console.log('findByCredentials')
+                            console.log(user)
+                            
+                            if (user != null){
+                                genHash(body.password).then(async (hash) => {
+                                    body.password = hash;
+                                    // console.log(hash)
+                                    var doc = await User.findByIdAndUpdate(
+                                        {_id:  body.id}, body, {new: true}
+                                        );
+                                    console.log(doc);
+                                    if (doc == null){
+                                        res.status(400).send({
+                                            errmsg: "Document to be updated not found."
+                                        })
+                                    }
+                                    else{
+                                        res.status(200).send(doc);
+                                    }
+                                }).catch((e) => {
+                                    res.status(400).send({
+                                        "errmsg": "Sorry, couldn't generate hash..."
+                                    })
+                                });
+                            }
+                            else{
+                                res.status(400).send({
+                                    "errmsg": "Sorry, your old password is incorrect..."
+                                })
+                            }
+                        }
+                        catch(e){
+                            res.status(400).send({
+                                "errmsg": "Sorry, unable to find user..."
+                            })
+                        }
+                    }
+                }
+                else{
                     var doc = await User.findByIdAndUpdate(
                         {_id:  body.id}, body, {new: true}
                         );
@@ -667,11 +716,7 @@ router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => 
                     else{
                         res.status(200).send(doc);
                     }
-                }).catch((e) => {
-                    res.status(400).send({
-                        "errmsg": "Sorry, couldn't generate hash..."
-                    })
-                });
+                }
             }
             else{
                 var doc = await User.findByIdAndUpdate(
@@ -700,42 +745,60 @@ router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => 
                 'city',
                 'postal',
                 'country',
+                'oldpassword',
                 'password'
             ]);
             if (req.file != null){
                 body.photo = req.file.path.slice(8);
             }
         
-            if (body.password != undefined && body.password != ''){
+            if (body.oldpassword != undefined && body.oldpassword != '' && body.password != undefined && body.password != ''){
               if (body.password.length < 6){
                 res.status(400).send({
                   errmsg: "Password length can not be less than 6."
                 })
               }
               else{
-                // body.password = await genHash(body.password);
-                genHash(body.password).then(async (hash) => {
-                    body.password = hash;
-
-                    console.log("body");
-                    console.log(body);
-                    var doc = await User.findByIdAndUpdate(
-                        {_id:  req.person._id}, body, {new: true}
-                        );
-                    console.log(doc);
-                    if (doc == null){
-                      res.status(400).send({
-                        errmsg: "Document to be updated not found."
-                      })
+                try{
+                    const user = await User.findByCredentials(req.person.email, body.oldpassword);
+                    console.log('findByCredentials')
+                    console.log(user)
+                    if (user != null){
+                        // body.password = await genHash(body.password);
+                        genHash(body.password).then(async (hash) => {
+                            body.password = hash;
+        
+                            console.log("body");
+                            console.log(body);
+                            var doc = await User.findByIdAndUpdate(
+                                {_id:  req.person._id}, body, {new: true}
+                                );
+                            console.log(doc);
+                            if (doc == null){
+                              res.status(400).send({
+                                errmsg: "Document to be updated not found."
+                              })
+                            }
+                            else{
+                              res.status(200).send(doc);
+                            }
+                        }).catch((e) => {
+                            res.status(400).send({
+                                "errmsg": "Sorry, couldn't generate hash..."
+                            })
+                        });
                     }
                     else{
-                      res.status(200).send(doc);
+                        res.status(400).send({
+                            "errmsg": "Sorry, your old password is incorrect..."
+                        })
                     }
-                }).catch((e) => {
+                }
+                catch(e){
                     res.status(400).send({
-                        "errmsg": "Sorry, couldn't generate hash..."
+                        "errmsg": "Sorry, unable to find user..."
                     })
-                });
+                }
               }
             }
             else{
