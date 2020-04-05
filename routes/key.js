@@ -66,8 +66,9 @@ router.put('/useKey', adminpartnerauthenticate, async function (req, res) {
         owner: req.person
     }
     try {
-        var doc1 = await Key.findByIdAndUpdate(
-            req.body.keyId,
+        var doc1 = await Key.findOneAndUpdate({
+                key: req.body.key
+            },
             body, {
                 new: true
             }
@@ -98,7 +99,9 @@ router.delete('/deleteKey', adminpartnerauthenticate, async function (req, res) 
 
 router.get('/getKeys', adminpartnerauthenticate, async function (req, res) {
     try {
-        var doc1 = await Key.find({}).populate('owner');
+        var doc1 = await Key.find({}).sort({
+            creadtedAt: -1
+        }).populate('owner');
         res.status(200).send(doc1);
     } catch (e) {
         res.status(400).send({
