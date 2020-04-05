@@ -12,7 +12,8 @@ var {
 var {
     authenticate,
     adminpartnerauthenticate,
-    adminauthenticate
+    adminauthenticate,
+    partnerauthenticate
 } = require('../middleware/authenticate');
 // 1
 router.post('/addQuestion', adminpartnerauthenticate, async function (req, res) {
@@ -96,13 +97,13 @@ router.put('/faqLike', adminpartnerauthenticate, async function (req, res) {
 // });
 
 // 5
-router.put('/updateFaq', adminauthenticate, async function (req, res) {
+router.put('/updateFaq', adminpartnerauthenticate, async function (req, res) {
     try {
         var doc1 = await Faq.findByIdAndUpdate(
-            req.query.faqId, {
+            req.body.faqId, {
                 question: req.body.question,
                 answer: req.body.answer,
-                category: req.body.answer
+                category: req.body.category
             }, {
                 new: true
             }
@@ -129,10 +130,11 @@ router.delete('/deleteQuestion', adminauthenticate, async function (req, res) {
 
 });
 
-router.delete('/deleteQuestionByOwner', adminpartnerauthenticate, async function (req, res) {
+router.delete('/deleteQuestionByOwner', authenticate, async function (req, res) {
     try {
         var doc1 = await Faq.findOneAndDelete({
-            'askedBy': req.person
+            'askedBy': req.person,
+            '_id': req.query.faqId
         });
         res.status(200).send(doc1);
     } catch (e) {
