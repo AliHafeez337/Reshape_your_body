@@ -1233,65 +1233,61 @@ router.get('/email/:em', async (req, res) => {
 });
 
 // change the email...
-router.get('/change/:str/email/:email/toBe/:toBe', authenticate, async (req, res) => {
+router.get('/change/:str/email/:email/toBe/:toBe', async (req, res) => {
     var str = req.params.str;
     var email = req.params.email;
     var toBe = req.params.toBe;
     try{
-        if(req.person.email == email){
-            const doc = await User.findByEmail(email);
-            if(doc != null){                
-                var decoded = jwt_decode(doc.emailToBe);
-                // console.log('see here...');
-                var a = decoded.exp.toString();
-                var b = (0).toString();
-                // console.log(a);
-                // console.log(b);
-                // console.log(a+b+b+b);
-                // console.log(Date.now());
-                console.log(decoded);
-                if (Date.now() < a+b+b+b){
-                    if (decoded.code == str){
-                        var doc1 = await User.findOneAndUpdate({
-                            _id: doc.id
-                            }, 
-                            {
-                                email: decoded.email,
-                                emailToBe: ''
-                            }, 
-                            {new: true});
-                        // console.log(doc1);
-                        if (doc1 != null){
-                            res.status(200).send(doc1);
-                        }
-                        else{
-                            res.status(401).send({
-                                errmsg: "Unable to update email address..."
-                            });
-                        }
+        const doc = await User.findByEmail(email);
+        if(doc != null){                
+            var decoded = jwt_decode(doc.emailToBe);
+            // console.log('see here...');
+            var a = decoded.exp.toString();
+            var b = (0).toString();
+            // console.log(a);
+            // console.log(b);
+            // console.log(a+b+b+b);
+            // console.log(Date.now());
+            console.log(decoded);
+            if (Date.now() < a+b+b+b){
+                if (decoded.code == str){
+                    var doc1 = await User.findOneAndUpdate({
+                        _id: doc.id
+                        }, 
+                        {
+                            email: decoded.email,
+                            emailToBe: ''
+                        }, 
+                        {new: true});
+                    // console.log(doc1);
+                    if (doc1 != null){
+                        res.status(200).send({
+                            "msg": "Email changed successfully",
+                            "New Email": doc1.email
+                        });
                     }
                     else{
                         res.status(401).send({
-                            errmsg: "You provided the wrong code..."
+                            errmsg: "Unable to update email address..."
                         });
                     }
                 }
                 else{
                     res.status(401).send({
-                        errmsg: "Time out! You are late..."
+                        errmsg: "You provided the wrong code..."
                     });
                 }
-    
             }
             else{
                 res.status(401).send({
-                    errmsg: "No user exists with this email."
+                    errmsg: "Time out! You are late..."
                 });
             }
+
         }
         else{
             res.status(401).send({
-                errmsg: "Unauthorized access."
+                errmsg: "No user exists with this email."
             });
         }
     }
