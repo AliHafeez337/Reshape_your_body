@@ -12,6 +12,10 @@ const multer = require('multer');
  
 // Local imports...
 var {User} = require('../models/user');
+var {Faq} = require('../models/faq');
+var {Key} = require('../models/key');
+var {Requests} = require('../models/requests');
+
 var {authenticate, adminauthenticate} = require('../middleware/authenticate');
 const {
     email, 
@@ -347,18 +351,128 @@ router.get('/all', adminauthenticate, async (req, res) => {
 router.delete('/delete', authenticate, async (req, res) => {
 //   console.log(req.person);
     try {
+        console.log(req.person)
+    console.log(req.body)
       if (req.person.usertype == 'admin'){
         var body = _.pick(req.body, [
-            'id',
+            'id', 'password'
         ]);
-        var doc = await User.findByIdAndDelete(body.id);
-        // console.log(doc);
-        res.send(doc);
+        if (body.id != null && req.person._id != body.id){
+            try{
+                Faq.deleteMany({askedBy: body.id});
+            }
+            catch(e) {
+            }
+            try{
+                Key.deleteMany({owner: body.id});
+            }
+            catch(e) {
+            }
+            try{
+                Requests.deleteMany({madeBy: body.id});
+            }
+            catch(e) {
+            }
+            try{
+                var doc = await User.findByIdAndDelete(body.id);
+                // console.log(doc);
+                res.send(doc);
+            }
+            catch(e) {
+                res.status(400).send({
+                    "errmsg": "Unable to delete this user..."
+                });
+            }
+        }
+        else{ //admin is deleting himself
+            try{
+                const user = await User.findByCredentials(req.person.email, body.password);
+                // console.log('findByCredentials')
+                // console.log(user)
+                
+                if (user != null){
+                    try{
+                        Faq.deleteMany({askedBy: req.person._id});
+                    }
+                    catch(e) {
+                    }
+                    try{
+                        Key.deleteMany({owner: req.person._id});
+                    }
+                    catch(e) {
+                    }
+                    try{
+                        Requests.deleteMany({madeBy: req.person._id});
+                    }
+                    catch(e) {
+                    }
+                    try{
+                        var doc = await User.findByIdAndDelete(req.person._id);
+                        // console.log(doc);
+                        res.send(doc);
+                    }
+                    catch(e) {
+                        res.status(400).send({
+                            "errmsg": "Unable to delete this user..."
+                        });
+                    }
+                }
+                else{
+                    res.status(401).send({
+                        "errmsg": "Sorry, incorrect password..."
+                    });
+                }
+            }
+            catch(e) {
+                res.status(400).send({
+                    "errmsg": "Something went wrong..."
+                });
+            }
+        }
       }
-      else{
-        var doc = await User.findByIdAndDelete(req.person._id);
-        // console.log(doc);
-        res.send(doc);
+      else{ // user is deleting himself
+        var body = _.pick(req.body, [
+            'password'
+        ]);
+        console.log(body.password)
+        try{
+            const user = await User.findByCredentials(req.person.email, body.password);
+            console.log('findByCredentials')
+            console.log(user)
+            
+            if (user != null){
+                try{
+                    Faq.deleteMany({askedBy: req.person._id});
+                }
+                catch(e) {
+                }
+                try{
+                    Key.deleteMany({owner: req.person._id});
+                }
+                catch(e) {
+                }
+                try{
+                    Requests.deleteMany({madeBy: req.person._id});
+                }
+                catch(e) {
+                }
+                try{
+                    var doc = await User.findByIdAndDelete(req.person._id);
+                    // console.log(doc);
+                    res.send(doc);
+                }
+                catch(e) {
+                    res.status(400).send({
+                        "errmsg": "Unable to delete this user..."
+                    });
+                }
+            }
+        }
+        catch(e) {
+            res.status(400).send({
+                "errmsg": "Something went wrong..."
+            });
+        }
       }
     } catch (e) {
       res.status(400).send({
