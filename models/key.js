@@ -42,7 +42,7 @@ KeySchema.methods.toJSON = function () {
             'key',
             'owner',
             'used',
-            'createdAt'
+            'creadtedAt'
         ]);
 };
 
