@@ -36,15 +36,18 @@ var transporter = nodemailer.createTransport({
 // Storage configuration...
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
+        console.log(file)
         cb(null, './uploads/');
     },
     filename: function(req, file, cb) {
+        console.log(file)
         cb(null, Date.now()+ '_' + file.originalname);
     }
 });
 
 // File filter for photos...
 const fileFilter = (req, file, cb) => {
+    console.log(file)
     if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png'){
         cb(null, true);
     }
@@ -82,9 +85,9 @@ router.post('/login',
                 usertype: req.user.usertype
                 // tokenexp: decoded.exp
             }
-            console.log(body1)
+            console.log(body1.photo)
             
-            if (body1.photo !== undefined){
+            if (body1.photo !== undefined && body1.photo !== null){
                 if (body1.photo.slice(0,4) !== "http"){
                     body1.photo = address + body1.photo
                 }
@@ -133,6 +136,7 @@ router.post('/register', upload.single('photo'), async (req, res) => {
         // if (body.languages.length > 0){
 
         // }
+        console.log(req.file);
         if (req.file != null){
             body.photo = req.file.path.slice(8);
         }
@@ -744,6 +748,7 @@ router.post('/adminregister', adminauthenticate, upload.single('photo'), async (
 router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => {
     
     try {
+        console.log(req.body)
         console.log(req.person.usertype);
         if (req.person.usertype == 'admin'){
             var body = _.pick(req.body, [
@@ -764,8 +769,19 @@ router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => 
             if (req.file != null){
                 body.photo = req.file.path.slice(8);
             }
-            // console.log('req.person._id')
-            // console.log(req.person._id)
+            // body.id = "5e8ac0e2aa1fe6c6b0463ede"
+            // req.body.id = "5e8ac0e2aa1fe6c6b0463ede"
+            // req.file = {
+            //     "name": "famous1.jpg",
+            //     "lastModified": 1574948526298,
+                
+            //     "webkitRelativePath": "",
+            //     "size": 30948,
+            //     "type": "image/jpeg"
+            // }
+            console.log(req.body.id)
+            console.log('req.person._id')
+            // console.log(req.file)
             if (body.id == req.person._id){
 
                 if (_.pick(req.body, ['oldpassword']).oldpassword !== undefined && _.pick(req.body, ['oldpassword']).oldpassword !== null && _.pick(req.body, ['oldpassword']).oldpassword != '' 
@@ -821,6 +837,7 @@ router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => 
                     }
                 }
                 else{
+                    console.log("body")
                     console.log(body)
                     var doc = await User.findByIdAndUpdate(
                         {_id:  body.id}, body, {new: true}
