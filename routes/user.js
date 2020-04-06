@@ -767,10 +767,13 @@ router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => 
             // console.log('req.person._id')
             // console.log(req.person._id)
             if (body.id == req.person._id){
-                body.oldpassword = _.pick(req.body, ['oldpassword']).oldpassword;
-                body.password = _.pick(req.body, ['password']).password;
 
-                if (body.oldpassword != undefined && body.oldpassword != '' && body.password != undefined && body.password != ''){
+                if (_.pick(req.body, ['oldpassword']).oldpassword !== undefined && _.pick(req.body, ['oldpassword']).oldpassword !== null && _.pick(req.body, ['oldpassword']).oldpassword != '' 
+                    && _.pick(req.body, ['password']).password !== undefined && _.pick(req.body, ['password']).password !== null && _.pick(req.body, ['password']).password != ''){
+                    
+                    body.oldpassword = _.pick(req.body, ['oldpassword']).oldpassword;
+                    body.password = _.pick(req.body, ['password']).password;
+
                     if (body.password.length < 6){
                         res.status(400).send({
                         errmsg: "Password length can not be less than 6."
@@ -818,6 +821,7 @@ router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => 
                     }
                 }
                 else{
+                    console.log(body)
                     var doc = await User.findByIdAndUpdate(
                         {_id:  body.id}, body, {new: true}
                         );
@@ -859,20 +863,26 @@ router.patch('/edit', authenticate, upload.single('photo'), async (req, res) => 
                 'city',
                 'postal',
                 'country',
-                'oldpassword',
-                'password'
+                'languages'
             ]);
             if (req.file != null){
                 body.photo = req.file.path.slice(8);
             }
         
-            if (body.oldpassword != undefined && body.oldpassword != '' && body.password != undefined && body.password != ''){
-              if (body.password.length < 6){
-                res.status(400).send({
-                  errmsg: "Password length can not be less than 6."
-                })
-              }
-              else{
+            if (_.pick(req.body, ['oldpassword']).oldpassword !== undefined && _.pick(req.body, ['oldpassword']).oldpassword !== null && 
+                _.pick(req.body, ['oldpassword']).oldpassword !== '' && _.pick(req.body, ['password']).password !== undefined && 
+                _.pick(req.body, ['password']).password !== null && _.pick(req.body, ['password']).password !== ''){
+              
+                body.oldpassword = _.pick(req.body, ['oldpassword']).oldpassword;
+                body.password = _.pick(req.body, ['password']).password;
+
+              
+                if (body.password.length < 6){
+                    res.status(400).send({
+                    errmsg: "Password length can not be less than 6."
+                    })
+                }
+                else{
                 try{
                     const user = await User.findByCredentials(req.person.email, body.oldpassword);
                     console.log('findByCredentials')
