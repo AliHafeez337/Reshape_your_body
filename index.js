@@ -24,6 +24,7 @@ const {
   secret
 } = require('./config/config');
 var userRoutes = require('./routes/user');
+var imageRoutes = require('./routes/userImage');
 var keyRoutes = require('./routes/key');
 var faqRoutes = require('./routes/faq');
 const port = process.env.PORT || 3000;
@@ -116,6 +117,7 @@ var requestsRoute=require('./routes/requests')
 
 app.use('/request',requestsRoute)
 app.use('/user', userRoutes);
+app.use('/image', imageRoutes);
 app.use('/key', keyRoutes);
 app.use('/faq', faqRoutes);
 app.get('/', (req, res) => res.send('Hello Moto...!'));
