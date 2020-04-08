@@ -5,20 +5,25 @@ const _ = require('lodash');
 const phone = require('phone');
 const bcrypt = require('bcryptjs');
 
-const {secret, address} = require('../config/config');
-const {mongoose} = require('../db/mongoose');
+const {
+  secret,
+  address
+} = require('../config/config');
+const {
+  mongoose
+} = require('../db/mongoose');
 
 var UserSchema = new mongoose.Schema({
   verification: {
     required: false,
     type: String
   },
-  forgetToken:{
-      type: String,
-      required: false,
-      default: ''
+  forgetToken: {
+    type: String,
+    required: false,
+    default: ''
   },
-  emailToBe:{
+  emailToBe: {
     type: String,
     required: false,
     default: ''
@@ -30,7 +35,7 @@ var UserSchema = new mongoose.Schema({
   usertype: {
     type: String,
     required: true,
-    enum : ['admin','partner', 'customer', 'user'],
+    enum: ['admin', 'partner', 'customer', 'user'],
     default: 'user'
   },
   email: {
@@ -50,15 +55,15 @@ var UserSchema = new mongoose.Schema({
     minlength: 6
   },
   firstname: {
-      type: String,
-      trim: true
+    type: String,
+    trim: true
   },
   lastname: {
-      type: String,
-      trim: true
+    type: String,
+    trim: true
   },
   birthdate: {
-      type: Date
+    type: Date
   },
   phone: {
     type: String,
@@ -66,15 +71,14 @@ var UserSchema = new mongoose.Schema({
     trim: true,
     minlength: 1,
     unique: true,
-    sparse:true,
+    sparse: true,
     validate: {
-      validator: function() {
-          if (phone(this.phone).length == 0) {
-              return false;
-          }
-          else {
-              return true;
-          }
+      validator: function () {
+        if (phone(this.phone).length == 0) {
+          return false;
+        } else {
+          return true;
+        }
       },
       message: '{VALUE} is not a valid phone number.'
     }
@@ -84,28 +88,28 @@ var UserSchema = new mongoose.Schema({
     trim: true
   }],
   address1: {
-      type: String,
-      trim: true
+    type: String,
+    trim: true
   },
   address2: {
-      type: String,
-      trim: true
+    type: String,
+    trim: true
   },
   city: {
-      type: String,
-      trim: true
+    type: String,
+    trim: true
   },
   postal: {
-      type: String,
-      trim: true
+    type: String,
+    trim: true
   },
   country: {
-      type: String,
-      trim: true
+    type: String,
+    trim: true
   },
   createdAt: {
-      type: Date,
-      default: Date.now
+    type: Date,
+    default: Date.now
   },
   tokens: [{
     access: {
@@ -122,30 +126,30 @@ var UserSchema = new mongoose.Schema({
 UserSchema.methods.toJSON = function () {
   var user = this;
   var userObject = user.toObject();
-  var picked = _.pick(userObject, 
-    ['_id', 
-    'usertype',
-    'email',
-    'firstname',
-    'lastname',
-    'birthdate',
-    'phone',
-    'languages',
-    'address1',
-    'address2',
-    'city',
-    'postal',
-    'country',
-    'photo'
-  ]);
-  
-  if (picked.photo !== undefined && picked.photo !== null){
-    if (picked.photo.slice(0,4) !== "http"){
+  var picked = _.pick(userObject,
+    ['_id',
+      'usertype',
+      'email',
+      'firstname',
+      'lastname',
+      'birthdate',
+      'phone',
+      'languages',
+      'address1',
+      'address2',
+      'city',
+      'postal',
+      'country',
+      'photo',
+      'createdAt'
+    ]);
+
+  if (picked.photo !== undefined && picked.photo !== null) {
+    if (picked.photo.slice(0, 4) !== "http") {
       picked.photo = address + picked.photo
     }
-  }
-  else{
-      delete picked.photo
+  } else {
+    delete picked.photo
   }
 
   return picked;
@@ -154,15 +158,20 @@ UserSchema.methods.toJSON = function () {
 UserSchema.methods.generateAuthToken = function () {
   var user = this;
   var access = 'auth';
-  var token = jwt.sign(
-    {_id: user._id.toHexString(), access}, 
+  var token = jwt.sign({
+      _id: user._id.toHexString(),
+      access
+    },
     secret,
     // { expiresIn: '24h' // expires in 24 hours
     // }
   ).toString();
   // console.log(token);
   // user.tokens.concat([{access, token}]);
-  user.tokens.push({access, token});
+  user.tokens.push({
+    access,
+    token
+  });
 
   return user.save().then(() => {
     return token;
@@ -173,7 +182,9 @@ UserSchema.methods.removeToken = function (token) {
   var user = this;
   return user.update({
     $pull: {
-      tokens: {token}
+      tokens: {
+        token
+      }
     }
   });
 };
@@ -198,8 +209,7 @@ UserSchema.statics.findByToken = async function (token) {
 
   try {
     decoded = jwt.verify(token, secret);
-  } 
-  catch (e) {
+  } catch (e) {
     return Promise.reject(e);
   }
 
@@ -213,7 +223,9 @@ UserSchema.statics.findByToken = async function (token) {
 UserSchema.statics.findByEmail = function (email) {
   var User = this;
 
-  return User.findOne({email}).then((user) => {
+  return User.findOne({
+    email
+  }).then((user) => {
     // console.log(user)
     return user;
   });
@@ -222,7 +234,9 @@ UserSchema.statics.findByEmail = function (email) {
 UserSchema.statics.findByCredentials = function (email, password) {
   var User = this; //it is just a reservation of a variable, that a user would be this from a group of all the users
 
-  return User.findOne({email}).then((user) => {
+  return User.findOne({
+    email
+  }).then((user) => {
     if (!user) {
       return Promise.reject('User not found');
     }
@@ -286,4 +300,6 @@ UserSchema.pre('save', function (next) {
 
 var User = mongoose.model('User', UserSchema);
 
-module.exports = {User}
+module.exports = {
+  User
+}
