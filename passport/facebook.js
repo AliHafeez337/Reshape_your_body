@@ -30,6 +30,7 @@ passport.use(
         ] 
     },
     function(accessToken, refreshToken, profile, done) {
+      console.log('reached');
         // console.log(`access token is`);
         // console.log(accessToken);
         // console.log(`refresh token is`);

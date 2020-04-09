@@ -57,6 +57,8 @@ io.on('connection', (socket) => {
 app.use((req, res, next) => {
   // console.log(req);
   res.setHeader("Access-Control-Allow-Origin", "*");
+  // res.setHeader("Access-Control-Allow-Headers", "*");
+  // res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept, x-auth"
