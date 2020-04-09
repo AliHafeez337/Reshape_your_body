@@ -582,6 +582,7 @@ router.post('/adminregister', adminauthenticate, upload.single('photo'), async (
             'city',
             'postal',
             'country'
+            'languages'
         ]);
         if (req.file != null){
             body.photo = req.file.path.slice(8);
@@ -1162,7 +1163,7 @@ router.get(
                 'firstname': req.user._json.first_name,
                 'verification': '',
                 // 'photo': `http://graph.facebook.com/${req.user._json.id}/picture?type=large&redirect=true&width=500&height=500`
-                'photo': req.user._json.picture
+                'photo': req.user._json.picture.url
             });
             // console.log(user);
             
