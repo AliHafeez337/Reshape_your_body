@@ -62,6 +62,82 @@ const upload = multer({
   fileFilter,
 });
 
+// Admin's home page
+// router.get('/home', adminauthenticate, async (req, res) => {
+router.get('/home', async (req, res) => {
+    var d = new Date();
+     
+    var date = d.getDate();
+    var month = d.getMonth() + 1; // Since getMonth() returns month from 0-11 not 1-12
+    var year = d.getFullYear();
+    var dateStr = date + "/" + month + "/" + year;
+    console.log(dateStr)
+    
+    // var inYear = await User.find(
+    //     {"createdAt": {"$gte": new Date(year-1, month, date), 
+    //                     "$lt": new Date(year, month, date)}})
+
+    var userArray = [], customerArray  = [], partnerArray = []
+    var y = year
+    var m, nexty, nextm
+    const change  = 12 - month
+    const m1 = change
+    for (let i = 0; i < 13; i++){ // getting last 12 to 13 months data
+        if (i <= change){
+            y = year - 1
+            m = 12 - change + i
+        }
+        else {
+            y = year
+            m = i - m1
+        }
+        if (m + 1 > 12){
+            nexty = y + 1
+            nextm = 1
+        }
+        else{
+            nexty = y
+            nextm = m + 1
+        }
+        var pm1 = m
+        var pm2 = m
+        var pm3 = m
+        // console.log(i)
+        // console.log(y + " / " + pm1-- + " / " + 2)
+        // console.log(nexty + " / " + nextm + " / " + 1)
+        var usersInMonth = await User.countDocuments(
+            {"createdAt": {"$gte": new Date(y, pm2--, 2), 
+                            "$lt": new Date(nexty, nextm, 1)}
+                ,'usertype': 'user'
+            })
+        var customersInMonth = await User.countDocuments(
+            {"createdAt": {"$gte": new Date(y, pm1--, 2), 
+                            "$lt": new Date(nexty, nextm, 1)}
+                ,'usertype': 'customer'
+            })
+        var partnersInMonth = await User.countDocuments(
+            {"createdAt": {"$gte": new Date(y, pm3--, 2), 
+                            "$lt": new Date(nexty, nextm, 1)}
+                ,'usertype': 'partner'
+            })
+        userArray.push(usersInMonth) 
+        customerArray.push(customersInMonth) 
+        partnerArray.push(partnersInMonth) 
+    }
+    console.log(userArray)
+    console.log(customerArray)
+    console.log(partnerArray)
+    var countUsers = await User.countDocuments({'usertype': 'user'})
+    var countCustomers = await User.countDocuments({'usertype': 'customer'})
+    var countPartners = await User.countDocuments({'usertype': 'partner'})
+    console.log(countUsers)
+    console.log(countCustomers)
+    console.log(countPartners)
+    res.status(200).send({
+        msg: 'good'
+    });
+})
+
 // Login with local strategy...
 router.post(
   "/login",
@@ -539,23 +615,23 @@ router.post(
   async (req, res) => {
     console.log("admin registers");
     try {
-      var body = _.pick(req.body, [
-        "email",
-        "usertype",
-        "firstname",
-        "lastname",
-        "birthdate",
-        "phone",
-        "languages",
-        "address1",
-        "address2",
-        "city",
-        "postal",
-        "country",
-      ]);
-      if (req.file != null) {
-        body.photo = req.file.path.slice(8);
-      }
+        var body = _.pick(req.body, [
+            'email',
+            'usertype',
+            'firstname',
+            'lastname',
+            'birthdate',
+            'phone',
+            'languages',
+            'address1',
+            'address2',
+            'city',
+            'postal',
+            'country'
+        ]);
+        if (req.file != null){
+            body.photo = req.file.path.slice(8);
+        }
 
       const doc1 = await User.findByEmail(body.email);
       // console.log(doc1);
@@ -1120,79 +1196,155 @@ router.patch("/reset", async (req, res) => {
   }
 });
 
+// const onChange = require('on-change');
+// global.object = [{}];
+// global.obj1
+// obj1 = {
+//     i: 0
+// }
+
+// global.watchedObject = onChange(object, function (path, value, previousValue) {
+//     console.log('Object changed:', obj1.i = obj1.i + 1);
+//     console.log('this:', this);
+//     console.log('path:', path);
+//     console.log('value:', value);
+//     console.log('previousValue:', previousValue);
+// });
+
+// setInterval(() => {
+//     console.log(object)
+// }, 5000)
+
+// var ch = async (password) => {
+//     return new Promise(async (resolve, reject) => {
+//         onChange(obj1, function (path, value, previousValue) {
+//             console.log('this:', this);
+//             console.log('path:', path);
+//             console.log('value:', value);
+//             console.log('previousValue:', previousValue);
+//             resolve()
+//         });
+//     })
+// }
+
+// router.get("/responseFb/:code", async (req, res) => {
+//     setInterval(() => {
+//     }, 2000)
+
+// });
+
+// router.get("/callFb/:code", async (req, res) => {
+//     const code = req.params.code;
+//     object.code = {
+//         exp: new Date.now() + 600000
+//     }
+//     res.redirect('/auth/facebook');
+// });
+
+// router.get("/responseGoogle/:code", async (req, res) => {
+
+// });
+
+// router.get("/callGoogle", async (req, res) => {
+
+// });
+
+
+// router.get("/test", async (req, res) => {
+//     obj1.i = 5
+//     console.log(obj1)
+//     ch().then(() => {
+//         console.log("WOW IT WORKED")
+//         res.status(200).send(object.str)
+//     })
+// });
+
+middle = (req, res, next) => {
+    console.log('printing')
+    // console.log(res)
+    next()
+}
 // Call to facebook...
-router.get(
-  "/auth/facebook",
-  passport.authenticate("facebook", {
-    scope: [
-      // 'id',
-      // 'first_name',
-      // 'last_name',
-      // 'middle_name',
-      // 'name',
-      // 'name_format',
-      // 'picture',
-      // 'short_name',
-      "email",
-    ],
-  })
+router.get("/auth/facebook", 
+    middle,
+    passport.authenticate("facebook", 
+        { scope : [
+            // 'id',
+            // 'first_name',
+            // 'last_name',
+            // 'middle_name',
+            // 'name',
+            // 'name_format',
+            // 'picture',
+            // 'short_name',
+            'email',
+        ] }
+    )
 );
 
 // Return from facebook...
 router.get(
-  "/auth/facebook/callback",
-  passport.authenticate("facebook", { failureRedirect: "/user/fail" }),
-  async function (req, res) {
-    // const doc = await User.findOne({'email':req.user._json.email});
-    const doc = await User.findByEmail(req.user._json.email);
-    // console.log(doc);
-    // console.log('profile is here.');
-    // console.log(req.user._json);
-    if (doc == null) {
-      // console.log('picture is here.');
-      // console.log(req.user._json.picture);
-      var user = new User({
-        email: req.user._json.email,
-        lastname: req.user._json.last_name,
-        firstname: req.user._json.first_name,
-        verification: "",
-        // 'photo': `http://graph.facebook.com/${req.user._json.id}/picture?type=large&redirect=true&width=500&height=500`
-        photo: req.user._json.picture.url,
-      });
-      // console.log(user);
+    "/auth/facebook/callback",
+    passport.authenticate("facebook", 
+    { failureRedirect: '/user/fail' }),
+    async function(req, res) {
+        // const doc = await User.findOne({'email':req.user._json.email});
+        const doc = await User.findByEmail(req.user._json.email);
+        // console.log(doc);
+        // console.log('profile is here.');
+        // console.log(req.user._json);
+        if (doc == null){
+            // console.log('picture is here.');
+            // console.log(req.user._json.picture);
+            var user = new User({
+                'email': req.user._json.email,
+                'lastname': req.user._json.last_name,
+                'firstname': req.user._json.first_name,
+                'verification': '',
+                // 'photo': `http://graph.facebook.com/${req.user._json.id}/picture?type=large&redirect=true&width=500&height=500`
+                'photo': req.user._json.picture.url
+            });
+            // console.log(user);
+            
+            var doc1 = await user.save();
+            console.log(doc1);
+            const token = await doc1.generateAuthToken();
+            // var decoded = jwt_decode(token);
+            
+            var body1 = {
+                userid: doc1._id,
+                email: doc1.email,
+                token: token,
+                // global: globalString
+                // tokenexp: decoded.exp
+            }
+            console.log(body1);
 
-      var doc1 = await user.save();
-      console.log(doc1);
-      const token = await doc1.generateAuthToken();
-      // var decoded = jwt_decode(token);
 
-      var body1 = {
-        userid: doc1._id,
-        email: doc1.email,
-        token: token,
-        // tokenexp: decoded.exp
-      };
-      // console.log(body1);
-      res.status(200).send(body1);
-    } else {
-      console.log(doc);
-      const token = await doc.generateAuthToken();
-      // var decoded = jwt_decode(token);
+            res.status(200).send(body1);
+        }
+        else{
+            console.log(doc);
+            const token = await doc.generateAuthToken();
+            // var decoded = jwt_decode(token);
+            // watchedObject.str = "This can be accessed anywhere!"
+            // console.log(obj1)
 
-      var body1 = {
-        userid: doc._id,
-        email: doc.email,
-        token: token,
-        // tokenexp: decoded.exp
-      };
-      // console.log(body1);
-      res.status(200).send(body1);
-      // generate token...
-      // res.send the token to the user for their local storage
-      // if you get the token on a request, match the token
-      // if it matches, then the user is already login
+            var body1 = {
+                userid: doc._id,
+                email: doc.email,
+                token: token,
+                // global: object.str
+                // tokenexp: decoded.exp
+            }
+            // console.log(body1);
+            res.status(200).send(body1);
+            // generate token...
+            // res.send the token to the user for their local storage
+            // if you get the token on a request, match the token
+            // if it matches, then the user is already login
+        }
     }
-  }
 );
 
 // Call to google...
