@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "reshape-my-body",
+  "private_key_id": "e78260a8ed60240bd310236a4e5af9cbdeab2fbc",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCqL9NvFcxWlPTd\ny/0zGs5NosYmK5DsnogTdYmf5PF9kOftYXY7kHcsAgLnRgEt48yJIR96/pbKQBy2\nKeXJcN71mZIt2jD3mpbLBdbaMMjrJbTjVCzytGwjzev7VyTDGNxdWbKvAmk82mZN\nBl/t8/NqR3Ymlr6sq14t8rBkQls/XchvO981pEQr0Z4drym4EExotB8ap8u7MPwu\nVPnqVOkMM/2q0oQBOI0VZveTAUM4l2huINvFKGwAEDqh2mV7IoIsq0h+0ruqdrIU\nSFf0clBNsQuTMQ7zd/lA579VWAa6GlszkGXKn92p8Dj0v+ENd3wtkdiFZh5CI7jn\n4YD7yhW9AgMBAAECggEATBrFB0kNLq6/7at6F+9l0Ev5JjqXPWkLWwBVwf4Ei+1P\n+dR6pdpNoI1ptPiWMGpNHgmE5WCSF/GhpUiJLJLf8Z5yQzTubttfkXyT/tCQGK+s\n+3e5/fL25PACFkx68Q/eA5TIFgETBJZ55vnxzhwofx9j04/Xxql/nTaI8NzHp0bS\nF4UsIhse8KpacV/CWONKsJ8J2zqQOnNo3oZrjS5wcZ8jOAUo+Gjb0P8o0pxiePNy\nNJWg3JggbLpUlCKHmzdqIpktxaBE7+iYhrJ9MZGK4m410fHrCFUR7VvYGGJerQQC\nFgMLGuMhDMaG3reBZm68pZA2ySwvwewygg6JhmXTVQKBgQDqejwIot9747QrsyH6\nVUHVbT+nRQykHnnzLIOWKgdSBPu8TUX3wq7Mm4T53Bg3uN2XbteGU1N8yIaQrIci\nNdtCs8sna5+eFz3ziwNpPdpfTYHV4vfWSW5p2q0mR1tOG6Dy0njpnH8y6NMoOd1Y\n+C87iuMKCyxBNbzzyRgQLpOp0wKBgQC5zuLA1oHcu4MWeQhVzls8HfhCZACS++wS\nbs/pqfnpLDU3hz9Est+0EtE/V+oFxAj/tB9L52pOAv1L8mpeke//oIn2eb2mRy/C\nwu377dG4YUQBfqUyQB1Mm13ZTKYabnXIIidzrDwCKt+ORxbEO9IDZlMMw6CfvFgy\nMYO6tcF4LwKBgGZBuo61oSshacCpFYdbySMvytPC7DlixSJE5noFiD2/yJ0dQgdE\nEwFOTZa94p3idFkHUNzW2BESToUniKNlw2J6kH13lRvX3P+qP2mVPPfVEGtb2WPN\nkGZ/pIWOFwagS/e5zFttEZf9K6FeYubbDZY1AsCtkLY7nlTe/SyJc4JbAoGALh9Y\n0h1tJum05IMuun36z7VwxqokKlg2hWzUV2BGFMdQfnQoFFmChiSVpG+iO8Qpp6+C\nhUjwbmT3kz6dgNQhCwdCt9gIZ5oMFQBmKr8h6+7Y/rX9M7gOjdGTPjl0keMRgZhY\nyrHaQ3949sxWrmda/lUMEIMPABe0nOEFnfc4CykCgYAJKI0Bfm/BzbdyDRHfoyS4\nbw+h3k+FV2/UuWGkiMLPQtzOhLVz3kGfvWYv9aJJjfpmnSulgKq7afke0nE8Gvtx\no2UDz0m0CkDFER7XkuNTFeJpqDEDfwPPgnU4HRaRbia6q/uTksibTMknF/tAvrw/\n1qGS1777WLDNxkMTBM4Psw==\n-----END PRIVATE KEY-----\n",
+  "client_email": "reshape-your-body@reshape-my-body.iam.gserviceaccount.com",
+  "client_id": "101514818136333906966",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/reshape-your-body%40reshape-my-body.iam.gserviceaccount.com"
+}
