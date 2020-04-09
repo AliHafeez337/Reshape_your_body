@@ -94,7 +94,14 @@ router.put("/update", async (req, res, next) => {
     category = req.body.category;
     name = req.body.name;
     description = req.body.description;
-    userAllowed = req.body.userAllowed;
+    userAllowedd = req.body.userAllowed;
+
+    ua = userAllowedd.split(",");
+
+    console.log("i am for " + ua[0]);
+    var i;
+
+    console.log("user alllowed  " + userAllowedd);
 
     if (language !== undefined && file !== "") {
       console.log("i am in first" + language + file);
@@ -113,7 +120,7 @@ router.put("/update", async (req, res, next) => {
             category: category,
             name: name,
             description: description,
-            userAllowed: userAllowed,
+            userAllowed: ua,
           },
         },
         { new: true }
@@ -122,6 +129,7 @@ router.put("/update", async (req, res, next) => {
     }
     if (language === undefined || file === "") {
       console.log("i am in second" + language);
+
       var up2 = await Upload.findByIdAndUpdate(
         req.query.prdid,
 
@@ -130,7 +138,7 @@ router.put("/update", async (req, res, next) => {
             category: category,
             name: name,
             description: description,
-            userAllowed: userAllowed,
+            userAllowed: ua,
           },
         },
         { new: true }
