@@ -1,32 +1,27 @@
 /* PACKAGES IMPORTS */
 
-const express = require('express');
-const bodyParser = require('body-parser');
-const path = require('path');
-const cookieParser = require('cookie-parser');
-const session = require('express-session');
-const logger = require('morgan');
-const socketIO = require('socket.io');
-const http = require('http');
-const passport = require('passport');
+const express = require("express");
+const bodyParser = require("body-parser");
+const path = require("path");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const logger = require("morgan");
+const socketIO = require("socket.io");
+const http = require("http");
+const passport = require("passport");
 
 /* LOCAL IMPORTS */
-const WSS=require('./broadcast')
+const WSS = require("./broadcast");
 
-
-var {
-  mongoose
-} = require('./db/mongoose');
-var {
-  User
-} = require('./models/user');
-const {
-  secret
-} = require('./config/config');
-var userRoutes = require('./routes/user');
-var imageRoutes = require('./routes/userImage');
-var keyRoutes = require('./routes/key');
-var faqRoutes = require('./routes/faq');
+var { mongoose } = require("./db/mongoose");
+var { User } = require("./models/user");
+const { secret } = require("./config/config");
+var userRoutes = require("./routes/user");
+var imageRoutes = require("./routes/userImage");
+var keyRoutes = require("./routes/key");
+var faqRoutes = require("./routes/faq");
+var downloadRoutes = require("./routes/download");
+var uploadRoutes = require("./routes/upload");
 const port = process.env.PORT || 3000;
 
 /* SERVER SETUP */
@@ -42,13 +37,13 @@ server.listen(port, () => {
 
 var io = socketIO(server);
 
-io.on('connection', (socket) => {
-  console.log('New user connected');
+io.on("connection", (socket) => {
+  console.log("New user connected");
 
-  socket.on('broadcastThisMessage', (message) => {
-    console.log('Message to be broadcasted: ', message);
+  socket.on("broadcastThisMessage", (message) => {
+    console.log("Message to be broadcasted: ", message);
 
-    socket.broadcast.emit('newMessage', message);
+    socket.broadcast.emit("newMessage", message);
   });
 });
 
@@ -67,23 +62,29 @@ app.use((req, res, next) => {
   );
   next();
 });
-app.use(logger('dev'));
+app.use(logger("dev"));
 app.use(express.json());
-app.use(express.urlencoded({
-  extended: false
-}));
-app.use(bodyParser.urlencoded({
-  extended: false
-}));
+app.use(
+  express.urlencoded({
+    extended: false,
+  })
+);
+app.use(
+  bodyParser.urlencoded({
+    extended: false,
+  })
+);
 app.use(cookieParser());
 
 /* Express session midleware */
 
-app.use(session({
-  secret,
-  resave: true,
-  saveUninitialized: true
-}));
+app.use(
+  session({
+    secret,
+    resave: true,
+    saveUninitialized: true,
+  })
+);
 
 /* PASSPORT MIDDLEWARE */
 
@@ -95,7 +96,7 @@ passport.serializeUser(function (user, cb) {
 });
 
 passport.deserializeUser(function (user, cb) {
-  console.log(user)
+  console.log(user);
   cb(null, user);
   // User.findById(user.id, function(err, user) {
   // cb(err, user);
@@ -104,46 +105,41 @@ passport.deserializeUser(function (user, cb) {
 
 /* PASSPORT STRATEGIES */
 
-var {
-  Local
-} = require('./passport/local');
-require('./passport/facebook');
-require('./passport/google');
+var { Local } = require("./passport/local");
+require("./passport/facebook");
+require("./passport/google");
 
 /* ROUTES */
 
-var userRoutes = require('./routes/user');
-var requestsRoute=require('./routes/requests')
+var userRoutes = require("./routes/user");
+var requestsRoute = require("./routes/requests");
 
-app.use('/request',requestsRoute)
-app.use('/user', userRoutes);
-app.use('/image', imageRoutes);
-app.use('/key', keyRoutes);
-app.use('/faq', faqRoutes);
-app.get('/', (req, res) => res.send('Hello Moto...!'));
-app.get('/:file', function (req, res) {
+app.use("/request", requestsRoute);
+app.use("/user", userRoutes);
+app.use("/image", imageRoutes);
+app.use("/key", keyRoutes);
+app.use("/faq", faqRoutes);
+app.use("/downloads", downloadRoutes);
+app.use("/uploads", uploadRoutes);
+app.get("/", (req, res) => res.send("Hello Moto...!"));
+app.get("/:file", function (req, res) {
   var file = req.params.file;
   console.log(req.params.file);
-  if (req.params.file=='register')
-  {
-    res.sendFile('register.html', {
-          root: __dirname
-        }) 
-  }
-  else if (req.params.file=='login')
-  {
-    res.sendFile('login.html', {
-          root: __dirname
-        });
-  }
-  else if (req.params.file=='broadcast'){
-    res.sendFile('websocket.html', {
-          root: __dirname
-        }); 
-  }
-  else{
-    res.sendFile('uploads/'+req.params.file, {
-          root: __dirname
-        }); 
+  if (req.params.file == "register") {
+    res.sendFile("register.html", {
+      root: __dirname,
+    });
+  } else if (req.params.file == "login") {
+    res.sendFile("login.html", {
+      root: __dirname,
+    });
+  } else if (req.params.file == "broadcast") {
+    res.sendFile("websocket.html", {
+      root: __dirname,
+    });
+  } else {
+    res.sendFile("uploads/" + req.params.file, {
+      root: __dirname,
+    });
   }
 });
